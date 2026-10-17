@@ -5,7 +5,7 @@
     <ProjectReference Include="..\LinkUpPro.Persistence\LinkUpPro.Persistence.csproj" />
     <ProjectReference Include="..\LinkUpPro.Shared\LinkUpPro.Shared.csproj" />
   </ItemGroup>
-
+	
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.*">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

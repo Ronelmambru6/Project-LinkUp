@@ -1,10 +1,12 @@
 using LinkUpPro.Persistence;
+using LinkUpPro.Application;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddPersistenceLayer(builder.Configuration);
+builder.Services.AddApplicationLayer(builder.Configuration);
 
 var app = builder.Build();
 

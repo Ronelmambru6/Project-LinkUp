@@ -1,8 +1,13 @@
 {
   "version": 2,
-  "dgSpecHash": "2Y17wJ2/WLM=",
+  "dgSpecHash": "0ijRvkJF7kA=",
   "success": true,
   "projectFilePath": "C:\\Users\\ronel\\OneDrive\\Documentos\\Universidad\\ITLA\\6to cuatrimestre\\Programacion III\\Project-LinkUp\\LinkUp-Pro\\LinkUp-Pro\\LinkUp-Pro.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "C:\\Users\\ronel\\.nuget\\packages\\microsoft.netcore.app.ref\\9.0.20\\microsoft.netcore.app.ref.9.0.20.nupkg.sha512",
+    "C:\\Users\\ronel\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\9.0.20\\microsoft.windowsdesktop.app.ref.9.0.20.nupkg.sha512",
+    "C:\\Users\\ronel\\.nuget\\packages\\microsoft.aspnetcore.app.ref\\9.0.20\\microsoft.aspnetcore.app.ref.9.0.20.nupkg.sha512",
+    "C:\\Users\\ronel\\.nuget\\packages\\microsoft.netcore.app.host.win-x64\\9.0.20\\microsoft.netcore.app.host.win-x64.9.0.20.nupkg.sha512"
+  ],
   "logs": []
 }

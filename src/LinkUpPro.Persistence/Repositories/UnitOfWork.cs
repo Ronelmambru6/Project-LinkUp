@@ -1,5 +1,7 @@
-﻿using LinkUpPro.Application.Interfaces.Repositories;
+﻿using LinkUpPro.Application.Common;
+using LinkUpPro.Application.Interfaces.Repositories;
 using LinkUpPro.Persistence.Contexts;
+using Microsoft.EntityFrameworkCore;
 
 namespace LinkUpPro.Persistence.Repositories
 {
@@ -12,8 +14,18 @@ namespace LinkUpPro.Persistence.Repositories
             _context = context;
         }
 
-        public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) =>
-            _context.SaveChangesAsync(cancellationToken);
+        public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                return await _context.SaveChangesAsync(cancellationToken);
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                // Otro usuario modificó el mismo registro al mismo tiempo
+                throw new ConcurrencyException("El registro fue modificado por otra operación.", ex);
+            }
+        }
 
         public async Task ExecuteInTransactionAsync(Func<Task> operation, CancellationToken cancellationToken = default)
         {
@@ -21,7 +33,7 @@ namespace LinkUpPro.Persistence.Repositories
             try
             {
                 await operation();
-                await _context.SaveChangesAsync(cancellationToken);
+                await SaveChangesAsync(cancellationToken);
                 await transaction.CommitAsync(cancellationToken);
             }
             catch

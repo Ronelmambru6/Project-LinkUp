@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using LinkUpPro.Application.Interfaces.Services;
+using LinkUpPro.Application.Services;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace LinkUpPro.Application
@@ -13,6 +15,7 @@ namespace LinkUpPro.Application
                 typeof(ServiceRegistration));
 
             // Aquí se irán registrando los servicios de cada módulo
+            services.AddScoped<IBattleshipService, BattleshipService>();
 
             return services;
         }

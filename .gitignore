@@ -480,3 +480,6 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+#Image uploads
+src/LinkUpPro.Web/wwwroot/uploads/

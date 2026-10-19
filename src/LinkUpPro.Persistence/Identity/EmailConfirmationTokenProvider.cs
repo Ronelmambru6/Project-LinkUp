@@ -16,10 +16,33 @@ namespace LinkUpPro.Persistence.Identity
             : base(dataProtectionProvider, options, logger)
         {
         }
+
+        // El enunciado pide un mensaje distinto para "vencido" y para "inválido o usado".
+        // Identity solo dice "no válido", así que aquí se lee la fecha de creación del token.
+        public bool IsExpired(string token)
+        {
+            try
+            {
+                var datos = Protector.Unprotect(Convert.FromBase64String(token));
+                using var stream = new MemoryStream(datos);
+                using var reader = new BinaryReader(stream);
+                var fechaCreacion = new DateTimeOffset(reader.ReadInt64(), TimeSpan.Zero);
+                return fechaCreacion + Options.TokenLifespan < DateTimeOffset.UtcNow;
+            }
+            catch
+            {
+                return false; // token manipulado o ilegible: se trata como inválido
+            }
+        }
     }
 
     public class EmailConfirmationTokenProviderOptions : DataProtectionTokenProviderOptions
     {
         public const string ProviderName = "EmailConfirmation";
+
+        public EmailConfirmationTokenProviderOptions()
+        {
+            Name = "EmailConfirmationDataProtectorTokenProvider";
+        }
     }
 }

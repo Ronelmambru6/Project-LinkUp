@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using LinkUpPro.Application.Interfaces.Repositories;
 using LinkUpPro.Persistence.Repositories;
 using LinkUpPro.Persistence.Identity;
+using LinkUpPro.Application.Interfaces.Services;
 
 namespace LinkUpPro.Persistence
 {
@@ -44,13 +45,13 @@ namespace LinkUpPro.Persistence
             .AddDefaultTokenProviders()
             .AddTokenProvider<EmailConfirmationTokenProvider<ApplicationUser>>(EmailConfirmationTokenProviderOptions.ProviderName);
 
-            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-
             // Activacion valida 24h; restablecimiento de contraseña, 1h
             services.Configure<EmailConfirmationTokenProviderOptions>(o => o.TokenLifespan = TimeSpan.FromHours(24));
             services.Configure<DataProtectionTokenProviderOptions>(o => o.TokenLifespan = TimeSpan.FromHours(1));
 
+            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IAccountService, AccountService>();
 
             return services;
         }

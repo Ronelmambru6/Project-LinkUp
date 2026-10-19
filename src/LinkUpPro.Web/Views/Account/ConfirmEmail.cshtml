@@ -1,0 +1,16 @@
+@{
+    ViewData["Title"] = "Activación de cuenta";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-sm text-center">
+            <div class="card-body p-4">
+                <h1 class="h4 mb-3">Activación de cuenta</h1>
+                <div class="alert alert-warning">@ViewData["Mensaje"]</div>
+                @* El enlace a "Reenviar correo de activación" se agrega en el PR B *@
+                <a asp-action="Login" class="btn btn-primary">Ir al inicio de sesión</a>
+            </div>
+        </div>
+    </div>
+</div>

@@ -24,6 +24,7 @@ namespace LinkUpPro.Persistence
             {
                 //La activacion usa el proveedor de 24h
                 options.Tokens.EmailConfirmationTokenProvider = EmailConfirmationTokenProviderOptions.ProviderName;
+                options.Tokens.PasswordResetTokenProvider = PasswordResetTokenProviderOptions.ProviderName;
 
                 // Reglas de contraseña del enunciado
                 options.Password.RequiredLength = 8;
@@ -43,11 +44,12 @@ namespace LinkUpPro.Persistence
             })
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders()
-            .AddTokenProvider<EmailConfirmationTokenProvider<ApplicationUser>>(EmailConfirmationTokenProviderOptions.ProviderName);
+            .AddTokenProvider<EmailConfirmationTokenProvider<ApplicationUser>>(EmailConfirmationTokenProviderOptions.ProviderName)
+            .AddTokenProvider<PasswordResetTokenProvider<ApplicationUser>>(PasswordResetTokenProviderOptions.ProviderName);
 
             // Activacion valida 24h; restablecimiento de contraseña, 1h
             services.Configure<EmailConfirmationTokenProviderOptions>(o => o.TokenLifespan = TimeSpan.FromHours(24));
-            services.Configure<DataProtectionTokenProviderOptions>(o => o.TokenLifespan = TimeSpan.FromHours(1));
+            services.Configure<PasswordResetTokenProviderOptions>(o => o.TokenLifespan = TimeSpan.FromHours(1));
             services.AddLinkUpAuthentication();
 
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));

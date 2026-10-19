@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
 using LinkUpPro.Application.Dtos.Account;
@@ -17,6 +18,10 @@ namespace LinkUpPro.Persistence.Identity
     public class AccountService : IAccountService
     {
         private const string CarpetaFotos = "profiles";
+
+        // Huella del último enlace de restablecimiento, guardada en la tabla AspNetUserTokens
+        private const string ProveedorTokenPropio = "LinkUpPro";
+        private const string NombreTokenRestablecimiento = "UltimoTokenRestablecimiento";
         private static readonly TimeSpan EsperaReenvio = TimeSpan.FromMinutes(5);
         private static readonly TimeSpan DuracionSesionPersistente = TimeSpan.FromDays(7);
 
@@ -25,6 +30,7 @@ namespace LinkUpPro.Persistence.Identity
         private readonly IImageStorageService _imageStorage;
         private readonly IEmailService _emailService;
         private readonly EmailConfirmationTokenProvider<ApplicationUser> _confirmationTokenProvider;
+        private readonly PasswordResetTokenProvider<ApplicationUser> _passwordResetTokenProvider;
         private readonly IMemoryCache _cache;
         private readonly ILogger<AccountService> _logger;
 
@@ -34,6 +40,7 @@ namespace LinkUpPro.Persistence.Identity
             IImageStorageService imageStorage,
             IEmailService emailService,
             EmailConfirmationTokenProvider<ApplicationUser> confirmationTokenProvider,
+            PasswordResetTokenProvider<ApplicationUser> passwordResetTokenProvider,
             IMemoryCache cache,
             ILogger<AccountService> logger)
         {
@@ -42,6 +49,7 @@ namespace LinkUpPro.Persistence.Identity
             _imageStorage = imageStorage;
             _emailService = emailService;
             _confirmationTokenProvider = confirmationTokenProvider;
+            _passwordResetTokenProvider = passwordResetTokenProvider;
             _cache = cache;
             _logger = logger;
         }
@@ -197,6 +205,89 @@ namespace LinkUpPro.Persistence.Identity
 
         public Task LogoutAsync() => _signInManager.SignOutAsync();
 
+        // ───────────────────────────── Restablecimiento de contraseña ─────────────────────────────
+
+        public async Task ForgotPasswordAsync(string userName, string resetUrl)
+        {
+            var user = await _userManager.FindByNameAsync(userName.Trim());
+
+            // Si no existe no se hace nada; el controlador muestra el mismo mensaje en ambos casos.
+            // Enunciado: solicitar el restablecimiento no activa, desactiva ni desbloquea la cuenta.
+            if (user is null)
+                return;
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+            // Enunciado: generar un enlace nuevo invalida el anterior. Se guarda la huella del último
+            // token; al restablecer solo se acepta el que coincide con ella.
+            await _userManager.SetAuthenticationTokenAsync(user, ProveedorTokenPropio, NombreTokenRestablecimiento, Huella(token));
+
+            var tokenCodificado = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+            var enlace = $"{resetUrl}?userId={Uri.EscapeDataString(user.Id)}&token={tokenCodificado}";
+
+            var cuerpo = $"""
+                <p>Hola {HtmlEncoder.Default.Encode(user.Nombre)},</p>
+                <p>Recibimos una solicitud para restablecer la contraseña de tu cuenta de LinkUp Pro.
+                   Para crear una nueva, haz clic en el siguiente enlace. Es válido por 1 hora y solo puede usarse una vez.</p>
+                <p><a href="{HtmlEncoder.Default.Encode(enlace)}">Restablecer mi contraseña</a></p>
+                <p>Si no solicitaste este cambio, ignora este mensaje: tu contraseña actual seguirá funcionando.</p>
+                """;
+
+            try
+            {
+                await _emailService.SendAsync(user.Email!, "Restablece tu contraseña de LinkUp Pro", cuerpo);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "No se pudo enviar el correo de restablecimiento al usuario {UserId}.", user.Id);
+            }
+        }
+
+        public async Task<ResetPasswordStatus> ResetPasswordAsync(ResetPasswordRequestDto request)
+        {
+            var user = await _userManager.FindByIdAsync(request.UserId);
+            if (user is null)
+                return ResetPasswordStatus.InvalidOrUsed;
+
+            string tokenDecodificado;
+            try
+            {
+                tokenDecodificado = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(request.Token));
+            }
+            catch (FormatException)
+            {
+                return ResetPasswordStatus.InvalidOrUsed;
+            }
+
+            if (_passwordResetTokenProvider.IsExpired(tokenDecodificado))
+                return ResetPasswordStatus.Expired;
+
+            // Solo se acepta el último enlace generado para este usuario
+            var huellaGuardada = await _userManager.GetAuthenticationTokenAsync(user, ProveedorTokenPropio, NombreTokenRestablecimiento);
+            if (huellaGuardada is null || huellaGuardada != Huella(tokenDecodificado))
+                return ResetPasswordStatus.InvalidOrUsed;
+
+            // ResetPasswordAsync valida el token y cambia el sello de seguridad, lo que:
+            // - deja el token de un solo uso
+            // - invalida todas las sesiones anteriores, incluidas las de "Mantener sesión iniciada"
+            var resultado = await _userManager.ResetPasswordAsync(user, tokenDecodificado, request.NewPassword);
+            if (!resultado.Succeeded)
+            {
+                return resultado.Errors.Any(e => e.Code == "InvalidToken")
+                    ? ResetPasswordStatus.InvalidOrUsed
+                    : ResetPasswordStatus.PasswordRejected;
+            }
+
+            await _userManager.RemoveAuthenticationTokenAsync(user, ProveedorTokenPropio, NombreTokenRestablecimiento);
+
+            // Enunciado: reinicia los intentos fallidos y elimina el bloqueo.
+            // No toca EmailConfirmed: una cuenta inactiva sigue inactiva.
+            await _userManager.ResetAccessFailedCountAsync(user);
+            await _userManager.SetLockoutEndDateAsync(user, null);
+
+            return ResetPasswordStatus.Succeeded;
+        }
+
         // ───────────────────────────── Auxiliares ─────────────────────────────
 
         private async Task SendActivationEmailAsync(ApplicationUser user, string activationUrl)
@@ -223,6 +314,10 @@ namespace LinkUpPro.Persistence.Identity
                 _logger.LogError(ex, "No se pudo enviar el correo de activación al usuario {UserId}.", user.Id);
             }
         }
+
+        // Huella SHA-256 del token: así en la base de datos no queda el token en claro
+        private static string Huella(string token) =>
+            Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
 
         private static ServiceResult MapIdentityErrors(IdentityResult resultado)
         {

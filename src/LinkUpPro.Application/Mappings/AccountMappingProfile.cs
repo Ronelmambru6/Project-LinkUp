@@ -10,6 +10,7 @@ namespace LinkUpPro.Application.Mappings
         {
             CreateMap<SaveRegisterViewModel, RegisterRequestDto>();
             CreateMap<LoginViewModel, LoginRequestDto>();
+            CreateMap<ResetPasswordViewModel, ResetPasswordRequestDto>();
         }
     }
 }

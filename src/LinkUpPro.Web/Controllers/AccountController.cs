@@ -18,6 +18,7 @@ namespace LinkUpPro.Web.Controllers
 
         private const string MensajeInactividad = "Su sesión finalizó por inactividad. Inicie sesión nuevamente para continuar.";
         private const string MensajeDebeIniciarSesion = "Debe iniciar sesión para acceder a esta sección.";
+        private const string MensajeEnlaceRestablecimientoInvalido = "El enlace para restablecer la contraseña no es válido o ya fue utilizado.";
 
         private readonly IAccountService _accountService;
         private readonly IImageStorageService _imageStorage;
@@ -216,6 +217,87 @@ namespace LinkUpPro.Web.Controllers
             // Mismo mensaje exista o no la cuenta, para no revelar qué usuarios están registrados
             TempData["Success"] = "Si la cuenta existe y todavía no ha sido activada, recibirá un nuevo enlace de activación.";
             return RedirectToAction(nameof(Login));
+        }
+
+        // ───────────────────────────── Restablecimiento de contraseña ─────────────────────────────
+
+        [AllowAnonymous]
+        [HttpGet]
+        public IActionResult ForgotPassword()
+        {
+            if (EstaAutenticado)
+                return RedirectToAction("Index", "Home");
+
+            return View(new ForgotPasswordViewModel());
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
+        {
+            if (EstaAutenticado)
+                return RedirectToAction("Index", "Home");
+
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var resetUrl = Url.Action(nameof(ResetPassword), "Account", null, Request.Scheme)!;
+            await _accountService.ForgotPasswordAsync(model.UserName, resetUrl);
+
+            // Mismo mensaje exista o no el usuario, para no revelar qué cuentas están registradas
+            TempData["Success"] = "Si el nombre de usuario corresponde a una cuenta registrada, recibirá un enlace para restablecer su contraseña.";
+            return RedirectToAction(nameof(Login));
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        public IActionResult ResetPassword(string? userId, string? token)
+        {
+            if (EstaAutenticado)
+                return RedirectToAction("Index", "Home");
+
+            if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(token))
+            {
+                ViewData["Mensaje"] = MensajeEnlaceRestablecimientoInvalido;
+                return View("ResetPasswordResult");
+            }
+
+            // El token se valida al enviar el formulario. Los campos de contraseña siempre llegan vacíos.
+            return View(new ResetPasswordViewModel { UserId = userId, Token = token });
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+        {
+            if (EstaAutenticado)
+                return RedirectToAction("Index", "Home");
+
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var estado = await _accountService.ResetPasswordAsync(_mapper.Map<ResetPasswordRequestDto>(model));
+
+            switch (estado)
+            {
+                case ResetPasswordStatus.Succeeded:
+                    TempData["Success"] = "Su contraseña fue restablecida correctamente. Ya puede iniciar sesión.";
+                    return RedirectToAction(nameof(Login));
+
+                case ResetPasswordStatus.Expired:
+                    ViewData["Mensaje"] = "El enlace para restablecer la contraseña ha vencido. Solicite uno nuevo.";
+                    return View("ResetPasswordResult");
+
+                case ResetPasswordStatus.PasswordRejected:
+                    ModelState.AddModelError(nameof(model.NewPassword), "La nueva contraseña no cumple las reglas de seguridad.");
+                    return View(model);
+
+                default:
+                    ViewData["Mensaje"] = MensajeEnlaceRestablecimientoInvalido;
+                    return View("ResetPasswordResult");
+            }
         }
     }
 }

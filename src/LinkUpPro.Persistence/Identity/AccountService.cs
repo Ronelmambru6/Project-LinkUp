@@ -4,8 +4,10 @@ using LinkUpPro.Application.Dtos.Account;
 using LinkUpPro.Application.Dtos.Common;
 using LinkUpPro.Application.Interfaces.Services;
 using LinkUpPro.Persistence.Entities;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
 namespace LinkUpPro.Persistence.Identity
@@ -15,26 +17,36 @@ namespace LinkUpPro.Persistence.Identity
     public class AccountService : IAccountService
     {
         private const string CarpetaFotos = "profiles";
+        private static readonly TimeSpan EsperaReenvio = TimeSpan.FromMinutes(5);
+        private static readonly TimeSpan DuracionSesionPersistente = TimeSpan.FromDays(7);
 
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IImageStorageService _imageStorage;
         private readonly IEmailService _emailService;
         private readonly EmailConfirmationTokenProvider<ApplicationUser> _confirmationTokenProvider;
+        private readonly IMemoryCache _cache;
         private readonly ILogger<AccountService> _logger;
 
         public AccountService(
             UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager,
             IImageStorageService imageStorage,
             IEmailService emailService,
             EmailConfirmationTokenProvider<ApplicationUser> confirmationTokenProvider,
+            IMemoryCache cache,
             ILogger<AccountService> logger)
         {
             _userManager = userManager;
+            _signInManager = signInManager;
             _imageStorage = imageStorage;
             _emailService = emailService;
             _confirmationTokenProvider = confirmationTokenProvider;
+            _cache = cache;
             _logger = logger;
         }
+
+        // ───────────────────────────── Registro ─────────────────────────────
 
         public async Task<ServiceResult> RegisterAsync(RegisterRequestDto request, string activationUrl)
         {
@@ -74,6 +86,8 @@ namespace LinkUpPro.Persistence.Identity
             return ServiceResult.Success();
         }
 
+        // ───────────────────────────── Activación ─────────────────────────────
+
         public async Task<ConfirmEmailStatus> ConfirmEmailAsync(string? userId, string? token)
         {
             if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(token))
@@ -106,7 +120,85 @@ namespace LinkUpPro.Persistence.Identity
                 : ConfirmEmailStatus.InvalidOrUsed;
         }
 
-        // Se reutilizará en el reenvío de activación (PR B)
+        public async Task<ResendActivationStatus> ResendActivationAsync(string userName, string activationUrl)
+        {
+            userName = userName.Trim();
+
+            // Una solicitud cada 5 minutos por nombre de usuario. Se aplica a cualquier nombre,
+            // exista o no, para no revelar qué cuentas están registradas.
+            var claveCache = $"reenvio-activacion:{userName.ToUpperInvariant()}";
+            if (_cache.TryGetValue(claveCache, out _))
+                return ResendActivationStatus.Throttled;
+
+            _cache.Set(claveCache, true, EsperaReenvio);
+
+            var user = await _userManager.FindByNameAsync(userName);
+
+            // Si no existe o ya está activa: no se envía nada ni se cambia su estado
+            if (user is null || user.EmailConfirmed)
+                return ResendActivationStatus.Processed;
+
+            // Cambiar el sello de seguridad invalida los enlaces de activación anteriores
+            await _userManager.UpdateSecurityStampAsync(user);
+            await SendActivationEmailAsync(user, activationUrl);
+
+            return ResendActivationStatus.Processed;
+        }
+
+        // ───────────────────────────── Inicio y cierre de sesión ─────────────────────────────
+
+        public async Task<LoginStatus> LoginAsync(LoginRequestDto request)
+        {
+            var user = await _userManager.FindByNameAsync(request.UserName.Trim());
+
+            // Usuario inexistente: mismo mensaje que contraseña incorrecta, y no se cuenta como intento
+            if (user is null)
+                return LoginStatus.InvalidCredentials;
+
+            // Bloqueada: se rechaza aunque la contraseña sea correcta, sin alargar el bloqueo
+            if (await _userManager.IsLockedOutAsync(user))
+                return LoginStatus.LockedOut;
+
+            if (!await _userManager.CheckPasswordAsync(user, request.Password))
+            {
+                // Suma un intento fallido; al llegar a 5 bloquea la cuenta 15 minutos
+                await _userManager.AccessFailedAsync(user);
+                return await _userManager.IsLockedOutAsync(user)
+                    ? LoginStatus.LockedOut
+                    : LoginStatus.InvalidCredentials;
+            }
+
+            // La cuenta inactiva solo se informa cuando las credenciales son correctas
+            if (!user.EmailConfirmed)
+                return LoginStatus.Inactive;
+
+            // Enunciado: un inicio de sesión exitoso reinicia los intentos fallidos
+            await _userManager.ResetAccessFailedCountAsync(user);
+
+            if (request.RememberMe)
+            {
+                // "Mantener sesión iniciada": máximo 7 días, sin renovarse (AllowRefresh = false)
+                var propiedades = new AuthenticationProperties
+                {
+                    IsPersistent = true,
+                    ExpiresUtc = DateTimeOffset.UtcNow.Add(DuracionSesionPersistente),
+                    AllowRefresh = false
+                };
+                await _signInManager.SignInAsync(user, propiedades);
+            }
+            else
+            {
+                // Cookie de sesión: se cierra con el navegador o tras 30 min de inactividad
+                await _signInManager.SignInAsync(user, isPersistent: false);
+            }
+
+            return LoginStatus.Succeeded;
+        }
+
+        public Task LogoutAsync() => _signInManager.SignOutAsync();
+
+        // ───────────────────────────── Auxiliares ─────────────────────────────
+
         private async Task SendActivationEmailAsync(ApplicationUser user, string activationUrl)
         {
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);

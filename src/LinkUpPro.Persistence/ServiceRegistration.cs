@@ -48,6 +48,7 @@ namespace LinkUpPro.Persistence
             // Activacion valida 24h; restablecimiento de contraseña, 1h
             services.Configure<EmailConfirmationTokenProviderOptions>(o => o.TokenLifespan = TimeSpan.FromHours(24));
             services.Configure<DataProtectionTokenProviderOptions>(o => o.TokenLifespan = TimeSpan.FromHours(1));
+            services.AddLinkUpAuthentication();
 
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddScoped<IUnitOfWork, UnitOfWork>();

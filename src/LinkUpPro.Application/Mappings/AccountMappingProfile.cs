@@ -9,6 +9,7 @@ namespace LinkUpPro.Application.Mappings
         public AccountMappingProfile()
         {
             CreateMap<SaveRegisterViewModel, RegisterRequestDto>();
+            CreateMap<LoginViewModel, LoginRequestDto>();
         }
     }
 }

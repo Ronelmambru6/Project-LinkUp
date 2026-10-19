@@ -9,5 +9,11 @@ namespace LinkUpPro.Application.Interfaces.Services
         Task<ServiceResult> RegisterAsync(RegisterRequestDto request, string activationUrl);
 
         Task<ConfirmEmailStatus> ConfirmEmailAsync(string? userId, string? token);
+
+        Task<LoginStatus> LoginAsync(LoginRequestDto request);
+
+        Task LogoutAsync();
+
+        Task<ResendActivationStatus> ResendActivationAsync(string userName, string activationUrl);
     }
 }

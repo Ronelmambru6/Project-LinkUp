@@ -24,6 +24,22 @@ app.UseHttpsRedirection();
 app.UseRouting();
 
 app.UseAuthentication();
+
+// Después de cerrar sesión, el botón "Atrás" no debe mostrar pantallas protegidas
+app.Use(async (context, next) =>
+{
+    context.Response.OnStarting(() =>
+    {
+        if (context.User.Identity?.IsAuthenticated == true)
+        {
+            context.Response.Headers.CacheControl = "no-store, no-cache, must-revalidate";
+            context.Response.Headers.Pragma = "no-cache";
+        }
+        return Task.CompletedTask;
+    });
+    await next();
+});
+
 app.UseAuthorization();
 
 app.MapStaticAssets();

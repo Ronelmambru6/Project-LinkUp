@@ -1,0 +1,107 @@
+@model FriendRequestsIndexViewModel
+@{
+    ViewData["Title"] = "Solicitudes de amistad";
+}
+
+<h1 class="h3 mb-4">Solicitudes de amistad</h1>
+
+<section class="card shadow-sm mb-4">
+    <div class="card-header bg-white">
+        <h2 class="h5 mb-0">Pendientes de responder</h2>
+    </div>
+    <div class="card-body">
+        @if (!Model.Pendientes.Any())
+        {
+            <p class="text-muted mb-0">No tiene solicitudes de amistad pendientes de responder.</p>
+        }
+        else
+        {
+            <ul class="list-group list-group-flush">
+                @foreach (var solicitud in Model.Pendientes)
+                {
+                    <li class="list-group-item px-0">
+                        <div class="d-flex flex-wrap align-items-center gap-3">
+                            <img src="@solicitud.OtroUsuario.FotoPerfil" alt="Foto de @solicitud.OtroUsuario.UserName"
+                                 class="rounded-circle object-fit-cover" width="56" height="56" />
+                            <div class="flex-grow-1">
+                                <div class="fw-semibold">@solicitud.OtroUsuario.NombreCompleto</div>
+                                <div class="text-muted small">@@@solicitud.OtroUsuario.UserName</div>
+                                <div class="small">
+                                    <a asp-action="MutualFriends" asp-route-id="@solicitud.OtroUsuario.Id">
+                                        @solicitud.AmigosEnComun amigo(s) en común
+                                    </a>
+                                    · Enviada el @solicitud.FechaEnvio.ToLocalTime().ToString("dd/MM/yyyy hh:mm tt")
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a asp-action="Accept" asp-route-id="@solicitud.Id" class="btn btn-success btn-sm">Aceptar</a>
+                                <a asp-action="Reject" asp-route-id="@solicitud.Id" class="btn btn-outline-danger btn-sm">Rechazar</a>
+                            </div>
+                        </div>
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+</section>
+
+<section class="card shadow-sm">
+    <div class="card-header bg-white d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <h2 class="h5 mb-0">Solicitudes enviadas</h2>
+        <a asp-action="New" class="btn btn-primary btn-sm">Nueva solicitud de amistad</a>
+    </div>
+    <div class="card-body">
+        @if (!Model.Enviadas.Any())
+        {
+            <p class="text-muted mb-0">No ha enviado solicitudes de amistad.</p>
+        }
+        else
+        {
+            <ul class="list-group list-group-flush">
+                @foreach (var solicitud in Model.Enviadas)
+                {
+                    var color = solicitud.Estado switch
+                    {
+                        LinkUpPro.Domain.Enums.EstadoSolicitud.Aceptada => "success",
+                        LinkUpPro.Domain.Enums.EstadoSolicitud.Rechazada => "secondary",
+                        _ => "warning text-dark"
+                    };
+
+                    <li class="list-group-item px-0">
+                        <div class="d-flex flex-wrap align-items-center gap-3">
+                            <img src="@solicitud.OtroUsuario.FotoPerfil" alt="Foto de @solicitud.OtroUsuario.UserName"
+                                 class="rounded-circle object-fit-cover" width="56" height="56" />
+                            <div class="flex-grow-1">
+                                <div class="fw-semibold">
+                                    @solicitud.OtroUsuario.NombreCompleto
+                                    <span class="badge bg-@color ms-1">@solicitud.EstadoTexto</span>
+                                </div>
+                                <div class="text-muted small">@@@solicitud.OtroUsuario.UserName</div>
+                                <div class="small">
+                                    <a asp-action="MutualFriends" asp-route-id="@solicitud.OtroUsuario.Id">
+                                        @solicitud.AmigosEnComun amigo(s) en común
+                                    </a>
+                                    · Enviada el @solicitud.FechaEnvio.ToLocalTime().ToString("dd/MM/yyyy hh:mm tt")
+                                    @if (solicitud.FechaRespuesta is DateTime respuesta)
+                                    {
+                                        <span>· Respondida el @respuesta.ToLocalTime().ToString("dd/MM/yyyy hh:mm tt")</span>
+                                    }
+                                </div>
+                            </div>
+                            <div>
+                                @if (solicitud.PuedeCancelar)
+                                {
+                                    <a asp-action="Cancel" asp-route-id="@solicitud.Id" class="btn btn-outline-danger btn-sm">Cancelar solicitud</a>
+                                }
+                                else if (solicitud.PuedeEliminarDelHistorial)
+                                {
+                                    <a asp-action="DeleteFromHistory" asp-route-id="@solicitud.Id" class="btn btn-outline-secondary btn-sm">Eliminar del historial</a>
+                                }
+                            </div>
+                        </div>
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+</section>

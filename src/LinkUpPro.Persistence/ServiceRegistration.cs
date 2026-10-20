@@ -55,6 +55,9 @@ namespace LinkUpPro.Persistence
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IAccountService, AccountService>();
+            services.AddScoped<IUserQueryRepository, UserQueryRepository>();
+            services.AddScoped<IFriendshipRepository, FriendshipRepository>();
+            services.AddScoped<IFriendRequestRepository, FriendRequestRepository>();
 
             return services;
         }

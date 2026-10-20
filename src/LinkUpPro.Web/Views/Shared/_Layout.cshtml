@@ -31,7 +31,7 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="FriendRequest" asp-action="Index">
                                 Solicitudes de amistad
-                                @* Contador de solicitudes pendientes: issue #8 *@
+                                @await Component.InvokeAsync("PendingRequestsCounter")
                             </a>
                         </li>
                         <li class="nav-item">

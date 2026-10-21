@@ -1,0 +1,6 @@
+@model int
+@* Enunciado: el contador no se muestra cuando es cero *@
+@if (Model > 0)
+{
+    <span class="badge rounded-pill bg-danger ms-1" title="Solicitudes pendientes">@Model</span>
+}

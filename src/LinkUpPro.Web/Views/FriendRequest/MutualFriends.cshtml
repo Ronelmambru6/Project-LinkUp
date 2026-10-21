@@ -1,0 +1,41 @@
+@model MutualFriendsViewModel
+@{
+    ViewData["Title"] = "Amigos en común";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <h1 class="h4 mb-3">Amigos en común</h1>
+
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                @if (!Model.Amigos.Any())
+                {
+                    <p class="text-muted mb-0">No tienen amigos en común.</p>
+                }
+                else
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var amigo in Model.Amigos)
+                        {
+                            @* Son amigos del usuario autenticado, así que se puede ir a su perfil (#20) *@
+                            <li class="list-group-item px-0">
+                                <a asp-controller="Friend" asp-action="Profile" asp-route-id="@amigo.Id"
+                                   class="d-flex align-items-center gap-3 text-decoration-none">
+                                    <img src="@amigo.FotoPerfil" alt="Foto de @amigo.UserName"
+                                         class="rounded-circle object-fit-cover" width="48" height="48" />
+                                    <span>
+                                        <span class="fw-semibold d-block text-body">@amigo.NombreCompleto</span>
+                                        <span class="text-muted small">@@@amigo.UserName</span>
+                                    </span>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+
+        <a asp-action="Index" class="btn btn-outline-secondary">Volver atrás</a>
+    </div>
+</div>

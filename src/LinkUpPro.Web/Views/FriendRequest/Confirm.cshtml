@@ -1,0 +1,39 @@
+@using LinkUpPro.Application.Dtos.FriendRequests
+@model FriendRequestConfirmViewModel
+@{
+    // Textos exactos del enunciado para cada confirmación
+    var (titulo, mensaje, textoVolver, textoConfirmar, claseConfirmar) = Model.Accion switch
+    {
+        FriendRequestAction.Accept => ("Aceptar solicitud",
+            $"¿Está seguro que desea aceptar la solicitud de amistad del usuario {Model.UserName}?",
+            "Cancelar", "Aceptar", "btn-success"),
+        FriendRequestAction.Reject => ("Rechazar solicitud",
+            $"¿Está seguro que desea rechazar la solicitud de amistad del usuario {Model.UserName}?",
+            "Cancelar", "Rechazar", "btn-danger"),
+        FriendRequestAction.Cancel => ("Cancelar solicitud",
+            $"¿Está seguro que desea cancelar la solicitud de amistad enviada a {Model.UserName}?",
+            "Volver atrás", "Cancelar solicitud", "btn-danger"),
+        _ => ("Eliminar del historial",
+            "¿Está seguro que desea eliminar esta solicitud de su historial?",
+            "Cancelar", "Eliminar", "btn-danger")
+    };
+    ViewData["Title"] = titulo;
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-sm text-center">
+            <div class="card-body p-4">
+                <h1 class="h4 mb-3">@titulo</h1>
+                <p class="mb-4">@mensaje</p>
+
+                @* La acción se confirma por POST con antiforgery; el Id de usuario sale de la sesión *@
+                <form asp-action="@Model.Accion.ToString()" asp-route-id="@Model.Id" method="post"
+                      class="d-flex justify-content-center gap-2">
+                    <a asp-action="Index" class="btn btn-outline-secondary">@textoVolver</a>
+                    <button type="submit" class="btn @claseConfirmar">@textoConfirmar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

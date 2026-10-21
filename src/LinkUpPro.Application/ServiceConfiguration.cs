@@ -14,6 +14,9 @@ namespace LinkUpPro.Application
                 cfg => cfg.LicenseKey = configuration["AutoMapper:LicenseKey"],
                 typeof(ServiceRegistration));
 
+            services.AddScoped<IFriendshipService, FriendshipService>();
+            services.AddScoped<IFriendRequestService, FriendRequestService>();
+
             // Aquí se irán registrando los servicios de cada módulo
             services.AddScoped<IBattleshipService, BattleshipService>();
 

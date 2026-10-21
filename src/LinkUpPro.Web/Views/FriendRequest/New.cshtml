@@ -1,0 +1,66 @@
+@model SaveFriendRequestViewModel
+@{
+    ViewData["Title"] = "Nueva solicitud de amistad";
+    var hayBusqueda = !string.IsNullOrWhiteSpace(Model.Search);
+}
+
+<h1 class="h3 mb-4">Nueva solicitud de amistad</h1>
+
+@* Buscador por nombre de usuario (GET: no modifica nada) *@
+<form asp-action="New" method="get" class="row g-2 mb-4" role="search">
+    <div class="col-sm">
+        <label for="search" class="visually-hidden">Nombre de usuario</label>
+        <input id="search" name="search" value="@Model.Search" class="form-control" placeholder="Buscar por nombre de usuario" />
+    </div>
+    <div class="col-sm-auto d-flex gap-2">
+        <button type="submit" class="btn btn-outline-primary">Buscar</button>
+        <a asp-action="New" class="btn btn-outline-secondary">Limpiar búsqueda</a>
+    </div>
+</form>
+
+<form asp-action="Send" method="post">
+    <input type="hidden" asp-for="Search" />
+    <div asp-validation-summary="All" class="alert alert-danger" role="alert"></div>
+
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            @if (!Model.Usuarios.Any())
+            {
+                <p class="text-muted mb-0">
+                    @(hayBusqueda
+                        ? "No se encontraron usuarios disponibles con el nombre ingresado."
+                        : "No existen usuarios disponibles para enviar una solicitud de amistad.")
+                </p>
+            }
+            else
+            {
+                <ul class="list-group list-group-flush">
+                    @foreach (var disponible in Model.Usuarios)
+                    {
+                        var idRadio = $"usuario-{disponible.Usuario.Id}";
+                        <li class="list-group-item px-0">
+                            <label class="d-flex align-items-center gap-3 w-100" for="@idRadio" role="button">
+                                @* Radio: solo se puede seleccionar un usuario a la vez *@
+                                <input type="radio" class="form-check-input mt-0" id="@idRadio"
+                                       name="SelectedUserId" value="@disponible.Usuario.Id"
+                                       checked="@(Model.SelectedUserId == disponible.Usuario.Id)" />
+                                <img src="@disponible.Usuario.FotoPerfil" alt="Foto de @disponible.Usuario.UserName"
+                                     class="rounded-circle object-fit-cover" width="48" height="48" />
+                                <span class="flex-grow-1">
+                                    <span class="fw-semibold d-block">@disponible.Usuario.NombreCompleto</span>
+                                    <span class="text-muted small">@@@disponible.Usuario.UserName</span>
+                                </span>
+                                <span class="small text-muted">@disponible.AmigosEnComun amigo(s) en común</span>
+                            </label>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between">
+        <a asp-action="Index" class="btn btn-outline-secondary">Volver atrás</a>
+        <button type="submit" class="btn btn-primary">Enviar solicitud</button>
+    </div>
+</form>

@@ -16,6 +16,7 @@ namespace LinkUpPro.Application
 
             services.AddScoped<IFriendshipService, FriendshipService>();
             services.AddScoped<IFriendRequestService, FriendRequestService>();
+            services.AddScoped<IPostService, PostService>();
 
             // Aquí se irán registrando los servicios de cada módulo
             services.AddScoped<IBattleshipService, BattleshipService>();

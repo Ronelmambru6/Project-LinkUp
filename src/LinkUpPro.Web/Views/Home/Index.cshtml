@@ -1,8 +1,41 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@using LinkUpPro.Application.ViewModels.Posts
+@model HomeIndexViewModel
+@{
+    ViewData["Title"] = "Inicio";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<h1 class="h3 mb-4">Mis publicaciones</h1>
+
+@* ── Crear publicación ── *@
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h2 class="h6 mb-3">Nueva publicación</h2>
+        <form asp-controller="Home" asp-action="Create" method="post" enctype="multipart/form-data" novalidate>
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+            <partial name="_PostFormFields" model="Model.Nueva" />
+            <button type="submit" class="btn btn-primary">Publicar</button>
+        </form>
+    </div>
 </div>
+
+<partial name="_PostFilters" model="Model.Filtros" />
+
+@if (Model.Publicaciones.Count == 0)
+{
+    <div class="alert alert-info" role="status">
+        @(Model.BusquedaConFiltros
+            ? "No se encontraron publicaciones que coincidan con los criterios seleccionados."
+            : "Todavía no ha realizado ninguna publicación.")
+    </div>
+}
+else
+{
+    foreach (var publicacion in Model.Publicaciones)
+    {
+        <partial name="_Post" model="publicacion" />
+    }
+}
+
+@section Scripts {
+    <script src="~/js/posts.js" asp-append-version="true"></script>
+}

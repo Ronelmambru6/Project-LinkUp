@@ -1,0 +1,11 @@
+﻿@using LinkUpPro.Application.ViewModels.Posts
+@model PostViewModel
+@{
+    ViewData["Title"] = "Publicación";
+}
+
+<h1 class="h3 mb-4">Publicación</h1>
+
+<partial name="_Post" model="Model" />
+
+<a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">Volver al inicio</a>

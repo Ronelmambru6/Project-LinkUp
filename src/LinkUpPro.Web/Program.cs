@@ -1,4 +1,4 @@
-using LinkUpPro.Persistence;
+﻿using LinkUpPro.Persistence;
 using LinkUpPro.Application;
 using LinkUpPro.Shared;
 
@@ -21,6 +21,10 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+// Las imágenes subidas se guardan en wwwroot/uploads DESPUÉS de compilar:
+// MapStaticAssets solo sirve los archivos que existían al compilar, así que hace falta UseStaticFiles
+app.UseStaticFiles();
+
 app.UseRouting();
 
 app.UseAuthentication();

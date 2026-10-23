@@ -1,5 +1,6 @@
 ﻿using LinkUpPro.Application.Common;
 using LinkUpPro.Application.Dtos.Battleship;
+using LinkUpPro.Application.Dtos.Users;
 using LinkUpPro.Domain.Enums;
 
 namespace LinkUpPro.Application.Interfaces.Services
@@ -13,6 +14,8 @@ namespace LinkUpPro.Application.Interfaces.Services
         Task<List<GameListItemDto>> GetActiveGamesAsync(string userId);
         Task<GameHistoryDto> GetHistoryAsync(string userId);
         Task<List<string>> GetActiveOpponentIdsAsync(string userId);
+        Task<List<UserSummaryDto>> GetAvailableOpponentsAsync(string userId);
+        Task<Dictionary<string, UserSummaryDto>> GetPlayersAsync(IEnumerable<string> userIds);
 
         // Crear partida y revisar a qué pantalla debe ir el usuario
         Task<OperationResult<int>> CreateGameAsync(string creatorId, string opponentId);

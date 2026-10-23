@@ -1,0 +1,89 @@
+﻿@using LinkUpPro.Application.Dtos.Battleship
+@using LinkUpPro.Application.ViewModels.Battleship
+@model TableroViewModel
+@{
+    string Texto(CeldaEstado estado) => estado switch
+    {
+        CeldaEstado.Acierto => "Acierto",
+        CeldaEstado.Fallo => "Fallo",
+        CeldaEstado.Barco => "Barco",
+        _ => "Agua"
+    };
+
+    string Clase(CeldaEstado estado) => estado switch
+    {
+        CeldaEstado.Acierto => "bs-hit",
+        CeldaEstado.Fallo => "bs-miss",
+        CeldaEstado.Barco => "bs-ship",
+        _ => "bs-empty"
+    };
+
+    // Filas A–L, columnas 1–12
+    string Nombre(int fila, int columna) => $"{(char)('A' + fila)}{columna + 1}";
+
+    // La tabla se define una vez y se imprime dentro o fuera de un formulario según el modo
+    Func<object, object> tabla = @<div class="bs-scroll">
+        <table class="bs-board" role="grid">
+            <thead>
+                <tr>
+                    <th></th>
+                    @for (var c = 0; c < 12; c++)
+                    {
+                        <th scope="col">@(c + 1)</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @for (var f = 0; f < 12; f++)
+                {
+                    <tr>
+                        <th scope="row">@((char)('A' + f))</th>
+                        @for (var c = 0; c < 12; c++)
+                        {
+                            var estado = Model.Celdas[f, c];
+                            <td>
+                                @if (Model.Modo == ModoTablero.SeleccionarCelda && estado == CeldaEstado.Vacia)
+                                {
+                                    <a class="bs-cell bs-empty" asp-controller="Game" asp-action="Direction"
+                                       asp-route-id="@Model.GameId" asp-route-shipId="@Model.ShipId"
+                                       asp-route-row="@f" asp-route-column="@c"
+                                       aria-label="Celda @Nombre(f, c)"></a>
+                                }
+                                else if (Model.Modo == ModoTablero.Atacar && estado == CeldaEstado.Vacia)
+                                {
+                                    <button type="submit" name="celda" value="@f,@c" class="bs-cell bs-empty"
+                                            aria-label="Atacar celda @Nombre(f, c)"></button>
+                                }
+                                else
+                                {
+                                    @* Celdas ocupadas, ya atacadas o de solo lectura: no hacen nada *@
+                                    <span class="bs-cell @Clase(estado)" title="@Nombre(f, c): @Texto(estado)">
+                                        <span class="visually-hidden">@Texto(estado)</span>
+                                    </span>
+                                }
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>;
+}
+
+<link rel="stylesheet" href="~/css/battleship.css" asp-append-version="true" />
+
+@if (!string.IsNullOrEmpty(Model.Titulo))
+{
+    <h2 class="h6 mb-2">@Model.Titulo</h2>
+}
+
+@if (Model.Modo == ModoTablero.Atacar)
+{
+    <form asp-controller="Game" asp-action="Attack" asp-route-id="@Model.GameId" method="post">
+        @tabla(null)
+    </form>
+}
+else
+{
+    @tabla(null)
+}

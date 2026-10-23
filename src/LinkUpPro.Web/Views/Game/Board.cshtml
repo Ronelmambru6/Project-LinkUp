@@ -1,0 +1,16 @@
+﻿@using LinkUpPro.Application.ViewModels.Battleship
+@model TableroViewModel
+@{
+    ViewData["Title"] = "Seleccionar celda";
+}
+
+<h1 class="h3 mb-3">Posicionar barco</h1>
+
+<partial name="_Board" model="Model" />
+
+<div class="bs-legend mt-3 mb-3">
+    <span><span class="bs-cell bs-empty"></span>Agua (seleccionable)</span>
+    <span><span class="bs-cell bs-ship"></span>Ocupada</span>
+</div>
+
+<a asp-action="Place" asp-route-id="@Model.GameId" class="btn btn-outline-secondary">Volver</a>

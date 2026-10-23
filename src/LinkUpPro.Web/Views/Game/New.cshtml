@@ -1,0 +1,34 @@
+﻿@using LinkUpPro.Application.ViewModels.Battleship
+@model NuevaPartidaViewModel
+@{
+    ViewData["Title"] = "Nueva partida";
+}
+
+<h1 class="h3 mb-4">Nueva partida</h1>
+
+@if (Model.Amigos.Count == 0)
+{
+    <div class="alert alert-info" role="status">
+        No tiene amigos disponibles para iniciar una partida nueva. Solo puede jugar con amigos con los que no tenga una partida activa.
+    </div>
+}
+else
+{
+    <p class="text-muted">Seleccione el amigo con el que quiere jugar.</p>
+    <div class="list-group mb-3">
+        @foreach (var amigo in Model.Amigos)
+        {
+            <form asp-action="Create" method="post" class="list-group-item d-flex align-items-center">
+                <img src="@amigo.FotoPerfil" alt="" class="rounded-circle object-fit-cover me-3" width="40" height="40" />
+                <div class="flex-grow-1">
+                    <div class="fw-semibold">@amigo.NombreCompleto</div>
+                    <div class="text-muted small">@@@amigo.UserName</div>
+                </div>
+                <input type="hidden" name="oponenteId" value="@amigo.Id" />
+                <button type="submit" class="btn btn-sm btn-primary">Jugar</button>
+            </form>
+        }
+    </div>
+}
+
+<a asp-action="Index" class="btn btn-outline-secondary">Volver atrás</a>

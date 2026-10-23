@@ -1,0 +1,34 @@
+﻿/* Tableros de Battleship (12x12) */
+.bs-scroll { overflow-x: auto; }
+
+.bs-board { border-collapse: separate; border-spacing: 2px; }
+.bs-board th { font-size: .75rem; font-weight: 600; text-align: center; color: var(--bs-secondary-color); padding: 0 .25rem; }
+
+.bs-cell {
+    display: block;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: 1px solid rgba(0, 0, 0, .25);
+    border-radius: .25rem;
+    background: #dbeafe;
+}
+
+.bs-empty { background: #dbeafe; }
+.bs-ship { background: #475569; border-color: #1e293b; }
+.bs-hit { background: #dc3545; border-color: #a71d2a; }   /* acierto: rojo */
+.bs-miss { background: #198754; border-color: #0f5132; }  /* fallo: verde */
+
+/* Celdas con acción */
+a.bs-cell, button.bs-cell { cursor: pointer; }
+a.bs-cell:hover, button.bs-cell:hover, a.bs-cell:focus-visible, button.bs-cell:focus-visible {
+    background: #93c5fd;
+    outline: 2px solid #0d6efd;
+    outline-offset: 1px;
+}
+
+/* Sin acción: no parece clicable */
+span.bs-cell { cursor: default; }
+
+.bs-legend { display: flex; flex-wrap: wrap; gap: 1rem; font-size: .85rem; }
+.bs-legend .bs-cell { display: inline-block; width: 1rem; height: 1rem; vertical-align: middle; margin-right: .25rem; }

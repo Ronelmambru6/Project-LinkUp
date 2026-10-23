@@ -1,0 +1,55 @@
+﻿@using LinkUpPro.Application.Dtos.Posts
+@using LinkUpPro.Application.ViewModels.Posts
+@using LinkUpPro.Domain.Enums
+@model PostFilterViewModel
+@{
+    var errores = ViewBag.FiltroErrores as List<string> ?? new List<string>();
+    string Sel(bool activo) => activo ? "selected" : "";
+}
+
+@* Los campos se escriben a mano: así el formulario de crear (mismos nombres) no los contamina *@
+<form method="get" asp-controller="Home" asp-action="Index" class="card card-body shadow-sm mb-4" novalidate>
+    <h2 class="h6 mb-3">Buscar y filtrar mis publicaciones</h2>
+
+    @foreach (var error in errores)
+    {
+        <div class="alert alert-danger py-2" role="alert">@error</div>
+    }
+
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label for="filtro-texto" class="form-label">Texto</label>
+            <input id="filtro-texto" name="Texto" class="form-control" value="@Model.Texto" maxlength="200" />
+        </div>
+        <div class="col-md-4">
+            <label for="filtro-tipo" class="form-label">Tipo de contenido</label>
+            <select id="filtro-tipo" name="TipoContenido" class="form-select">
+                <option value="">Todos</option>
+                <option value="Imagen" selected="@(Model.TipoContenido == TipoContenido.Imagen)">Imagen</option>
+                <option value="YouTube" selected="@(Model.TipoContenido == TipoContenido.YouTube)">Video de YouTube</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="filtro-edicion" class="form-label">Estado de edición</label>
+            <select id="filtro-edicion" name="Edicion" class="form-select">
+                <option value="Todas" selected="@(Model.Edicion == FiltroEdicion.Todas)">Todas</option>
+                <option value="Editadas" selected="@(Model.Edicion == FiltroEdicion.Editadas)">Editadas</option>
+                <option value="NoEditadas" selected="@(Model.Edicion == FiltroEdicion.NoEditadas)">No editadas</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="filtro-desde" class="form-label">Fecha desde</label>
+            <input id="filtro-desde" name="FechaDesde" type="date" class="form-control"
+                   value="@(Model.FechaDesde?.ToString("yyyy-MM-dd"))" />
+        </div>
+        <div class="col-md-4">
+            <label for="filtro-hasta" class="form-label">Fecha hasta</label>
+            <input id="filtro-hasta" name="FechaHasta" type="date" class="form-control"
+                   value="@(Model.FechaHasta?.ToString("yyyy-MM-dd"))" />
+        </div>
+        <div class="col-md-4 d-flex align-items-end gap-2">
+            <button type="submit" class="btn btn-primary">Buscar</button>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">Limpiar filtros</a>
+        </div>
+    </div>
+</form>

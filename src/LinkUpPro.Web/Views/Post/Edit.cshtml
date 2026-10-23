@@ -1,0 +1,22 @@
+﻿@using LinkUpPro.Application.ViewModels.Posts
+@model SavePostViewModel
+@{
+    ViewData["Title"] = "Editar publicación";
+}
+
+<h1 class="h3 mb-4">Editar publicación</h1>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form asp-controller="Post" asp-action="Edit" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data" novalidate>
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+            <partial name="_PostFormFields" model="Model" />
+            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/posts.js" asp-append-version="true"></script>
+}

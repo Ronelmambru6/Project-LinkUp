@@ -1,0 +1,16 @@
+﻿@using LinkUpPro.Application.ViewModels.Posts
+@model PostViewModel
+@{
+    ViewData["Title"] = "Eliminar publicación";
+}
+
+<h1 class="h3 mb-4">Eliminar publicación</h1>
+
+<div class="alert alert-warning" role="alert">¿Está seguro que desea eliminar esta publicación?</div>
+
+<partial name="_Post" model="Model" />
+
+<form asp-controller="Post" asp-action="Delete" asp-route-id="@Model.Id" method="post">
+    <button type="submit" class="btn btn-danger">Aceptar</button>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+</form>

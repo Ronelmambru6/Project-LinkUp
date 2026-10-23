@@ -1,0 +1,66 @@
+﻿@using LinkUpPro.Application.ViewModels.Posts
+@using LinkUpPro.Domain.Enums
+@model SavePostViewModel
+@{
+    // Los valores son los nombres del enum; el servidor vuelve a validar todo
+    var tipos = new List<SelectListItem>
+    {
+        new("Imagen", nameof(TipoContenido.Imagen)),
+        new("Video de YouTube", nameof(TipoContenido.YouTube))
+    };
+    var privacidades = new List<SelectListItem>
+    {
+        new("Solo amigos", nameof(Privacidad.SoloAmigos)),
+        new("Solo yo", nameof(Privacidad.SoloYo))
+    };
+}
+
+<div class="mb-3">
+    <label asp-for="Contenido" class="form-label"></label>
+    <textarea asp-for="Contenido" class="form-control" rows="3" maxlength="1000"
+              placeholder="¿Qué quiere compartir?"></textarea>
+    <span asp-validation-for="Contenido" class="text-danger small"></span>
+</div>
+
+<div data-post-form>
+    <div class="row g-3 mb-3">
+        <div class="col-md-4">
+            <label asp-for="TipoContenido" class="form-label"></label>
+            <select asp-for="TipoContenido" asp-items="tipos" class="form-select" data-post-type>
+                <option value="">Seleccione...</option>
+            </select>
+            <span asp-validation-for="TipoContenido" class="text-danger small"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="Privacidad" class="form-label"></label>
+            <select asp-for="Privacidad" asp-items="privacidades" class="form-select"></select>
+            <span asp-validation-for="Privacidad" class="text-danger small"></span>
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+            <div class="form-check mb-2">
+                <input asp-for="PermitirComentarios" class="form-check-input" />
+                <label asp-for="PermitirComentarios" class="form-check-label"></label>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-3" data-post-image-group hidden>
+        @if (!string.IsNullOrEmpty(Model.RutaImagenActual))
+        {
+            <div class="mb-2">
+                <div class="form-text mb-1">Imagen actual (se conserva si no selecciona otra):</div>
+                <img src="@Model.RutaImagenActual" alt="Imagen actual de la publicación"
+                     class="img-thumbnail" style="max-height: 160px;" />
+            </div>
+        }
+        <label asp-for="Imagen" class="form-label"></label>
+        <input asp-for="Imagen" type="file" class="form-control" accept=".jpg,.jpeg,.png,.webp" />
+        <span asp-validation-for="Imagen" class="text-danger small"></span>
+    </div>
+
+    <div class="mb-3" data-post-link-group hidden>
+        <label asp-for="UrlYouTube" class="form-label"></label>
+        <input asp-for="UrlYouTube" class="form-control" placeholder="https://www.youtube.com/watch?v=..." />
+        <span asp-validation-for="UrlYouTube" class="text-danger small"></span>
+    </div>
+</div>

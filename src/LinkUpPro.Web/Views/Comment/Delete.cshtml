@@ -1,0 +1,23 @@
+﻿@using LinkUpPro.Application.ViewModels.Comments
+@model DeleteCommentViewModel
+@{
+    ViewData["Title"] = "Eliminar comentario";
+}
+
+<h1 class="h3 mb-4">Eliminar comentario</h1>
+
+<div class="alert alert-warning" role="alert">¿Está seguro que desea eliminar este comentario?</div>
+
+<div class="card shadow-sm mb-3" style="max-width: 40rem;">
+    <div class="card-body">
+        <div class="small text-muted mb-1">
+            @@@Model.Autor.UserName · @Model.FechaCreacion.ToLocalTime().ToString("dd/MM/yyyy hh:mm tt")
+        </div>
+        <p class="mb-0" style="white-space: pre-line;">@Model.Contenido</p>
+    </div>
+</div>
+
+<form asp-controller="Comment" asp-action="Delete" asp-route-id="@Model.Id" method="post">
+    <button type="submit" class="btn btn-danger">Aceptar</button>
+    <a asp-controller="Post" asp-action="Details" asp-route-id="@Model.PostId" asp-fragment="comentarios" class="btn btn-outline-secondary">Cancelar</a>
+</form>

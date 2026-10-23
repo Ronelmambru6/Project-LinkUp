@@ -1,0 +1,80 @@
+﻿@using LinkUpPro.Application.ViewModels.Comments
+@model CommentViewModel
+@{
+    // Enlace al perfil solo si el autor es el propio usuario o un amigo. La acción Friend/Profile la define el
+    // módulo de Amigos: mientras no exista, Url.Action devuelve null y el usuario se muestra sin enlace.
+    var perfilUrl = Model.PuedeVerPerfil && !Model.Eliminado
+        ? Url.Action("Profile", "Friend", new { id = Model.Autor.Id })
+        : null;
+
+    // La indentación crece por nivel pero se detiene en el 5º para no aplastar los textos
+    var claseRespuestas = Model.Nivel < 5 ? "ms-3 ms-md-4 ps-3 border-start" : "ms-1 ps-2 border-start";
+}
+
+<div class="mb-3" id="comentario-@Model.Id">
+    @if (Model.Eliminado)
+    {
+        <p class="text-muted fst-italic mb-1">Este comentario fue eliminado.</p>
+    }
+    else
+    {
+        <div class="d-flex">
+            <img src="@Model.Autor.FotoPerfil" alt="Foto de perfil de @Model.Autor.UserName"
+                 class="rounded-circle object-fit-cover me-2 flex-shrink-0" width="36" height="36" />
+            <div class="flex-grow-1">
+                <div class="small">
+                    @if (perfilUrl is not null)
+                    {
+                        <a href="@perfilUrl" class="fw-semibold text-decoration-none">@@@Model.Autor.UserName</a>
+                    }
+                    else
+                    {
+                        <span class="fw-semibold">@@@Model.Autor.UserName</span>
+                    }
+                    <span class="text-muted ms-1">@Model.FechaCreacion.ToLocalTime().ToString("dd/MM/yyyy hh:mm tt")</span>
+                    @if (Model.Editado)
+                    {
+                        <span class="badge text-bg-secondary ms-1">Editado</span>
+                    }
+                </div>
+
+                <p class="mb-1" style="white-space: pre-line;">@Model.Contenido</p>
+
+                <div class="d-flex flex-wrap gap-3 align-items-start small">
+                    @if (Model.PuedeResponder)
+                    {
+                        <details>
+                            <summary class="text-primary" style="cursor: pointer;">Responder</summary>
+                            <form asp-controller="Comment" asp-action="Create" method="post" class="mt-2" style="min-width: 18rem;">
+                                <input type="hidden" name="postId" value="@Model.PostId" />
+                                <input type="hidden" name="parentCommentId" value="@Model.Id" />
+                                <label for="respuesta-@Model.Id" class="visually-hidden">Respuesta</label>
+                                <textarea id="respuesta-@Model.Id" name="contenido" class="form-control mb-2" rows="2"
+                                          maxlength="500" placeholder="Máximo 500 caracteres" required></textarea>
+                                <button type="submit" class="btn btn-primary btn-sm">Responder</button>
+                            </form>
+                        </details>
+                    }
+                    @if (Model.PuedeEditar)
+                    {
+                        <a asp-controller="Comment" asp-action="Edit" asp-route-id="@Model.Id">Editar</a>
+                    }
+                    @if (Model.PuedeEliminar)
+                    {
+                        <a asp-controller="Comment" asp-action="Delete" asp-route-id="@Model.Id" class="text-danger">Eliminar</a>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (Model.Respuestas.Count > 0)
+    {
+        <div class="@claseRespuestas mt-2">
+            @foreach (var respuesta in Model.Respuestas)
+            {
+                <partial name="_Comment" model="respuesta" />
+            }
+        </div>
+    }
+</div>

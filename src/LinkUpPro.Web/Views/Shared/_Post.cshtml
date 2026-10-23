@@ -47,11 +47,23 @@
             <div class="form-text">Los comentarios están desactivados para esta publicación.</div>
         }
 
-        @if (Model.EsAutor)
+        @{
+            // En el Home cada publicación enlaza a su detalle, donde están los comentarios y las reacciones
+            var enHome = (Context.Request.RouteValues["controller"] as string) == "Home";
+        }
+
+        @if (Model.EsAutor || enHome)
         {
             <div class="mt-3 d-flex gap-2">
-                <a asp-controller="Post" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-primary">Editar</a>
-                <a asp-controller="Post" asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-danger">Eliminar</a>
+                @if (enHome)
+                {
+                    <a asp-controller="Post" asp-action="Details" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-secondary">Ver comentarios y reacciones</a>
+                }
+                @if (Model.EsAutor)
+                {
+                    <a asp-controller="Post" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-primary">Editar</a>
+                    <a asp-controller="Post" asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-danger">Eliminar</a>
+                }
             </div>
         }
     </div>

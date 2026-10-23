@@ -1,0 +1,24 @@
+﻿@using LinkUpPro.Application.ViewModels.Comments
+@model EditCommentViewModel
+@{
+    ViewData["Title"] = "Editar comentario";
+}
+
+<h1 class="h3 mb-4">Editar comentario</h1>
+
+<div class="card shadow-sm" style="max-width: 40rem;">
+    <div class="card-body">
+        <form asp-controller="Comment" asp-action="Edit" asp-route-id="@Model.Id" method="post" novalidate>
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+            <div class="mb-3">
+                <label asp-for="Contenido" class="form-label"></label>
+                <textarea asp-for="Contenido" class="form-control" rows="3" maxlength="500"></textarea>
+                <span asp-validation-for="Contenido" class="text-danger small"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+            <a asp-controller="Post" asp-action="Details" asp-route-id="@Model.PostId" asp-fragment="comentarios" class="btn btn-outline-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>

@@ -17,6 +17,7 @@ namespace LinkUpPro.Application
             services.AddScoped<IFriendshipService, FriendshipService>();
             services.AddScoped<IFriendRequestService, FriendRequestService>();
             services.AddScoped<IPostService, PostService>();
+            services.AddScoped<IInteractionService, InteractionService>();
 
             // Aquí se irán registrando los servicios de cada módulo
             services.AddScoped<IBattleshipService, BattleshipService>();
@@ -24,4 +25,4 @@ namespace LinkUpPro.Application
             return services;
         }
     }
-}
+}

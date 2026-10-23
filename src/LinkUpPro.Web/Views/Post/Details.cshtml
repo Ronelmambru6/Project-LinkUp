@@ -1,11 +1,83 @@
-﻿@using LinkUpPro.Application.ViewModels.Posts
-@model PostViewModel
+﻿@using LinkUpPro.Application.ViewModels.Comments
+@using LinkUpPro.Application.ViewModels.Posts
+@using LinkUpPro.Domain.Enums
+@model PostDetailsViewModel
 @{
     ViewData["Title"] = "Publicación";
+    var meGusta = Model.MiReaccion == TipoReaccion.MeGusta;
+    var noMeGusta = Model.MiReaccion == TipoReaccion.NoMeGusta;
 }
 
 <h1 class="h3 mb-4">Publicación</h1>
 
-<partial name="_Post" model="Model" />
+<partial name="_Post" model="Model.Post" />
 
-<a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">Volver al inicio</a>
+@* ── Reacciones ── *@
+<section id="reacciones" class="card card-body shadow-sm mb-4" aria-label="Reacciones">
+    <div class="mb-2">
+        @if (Model.MiReaccion is null)
+        {
+            <span class="text-muted">Todavía no ha reaccionado a esta publicación.</span>
+        }
+        else
+        {
+            <span>Tu reacción: <strong>@(meGusta ? "Me gusta" : "No me gusta")</strong></span>
+        }
+    </div>
+
+    <form asp-controller="Reaction" asp-action="Set" method="post" class="d-flex flex-wrap gap-2 align-items-center">
+        <input type="hidden" name="postId" value="@Model.Post.Id" />
+        <button type="submit" name="tipo" value="@nameof(TipoReaccion.MeGusta)"
+                class="btn btn-sm @(meGusta ? "btn-primary" : "btn-outline-primary")" aria-pressed="@(meGusta ? "true" : "false")">
+            Me gusta (@Model.Post.MeGusta)
+        </button>
+        <button type="submit" name="tipo" value="@nameof(TipoReaccion.NoMeGusta)"
+                class="btn btn-sm @(noMeGusta ? "btn-secondary" : "btn-outline-secondary")" aria-pressed="@(noMeGusta ? "true" : "false")">
+            No me gusta (@Model.Post.NoMeGusta)
+        </button>
+    </form>
+
+    @if (Model.MiReaccion is not null)
+    {
+        <form asp-controller="Reaction" asp-action="Remove" method="post" class="mt-2">
+            <input type="hidden" name="postId" value="@Model.Post.Id" />
+            <button type="submit" class="btn btn-sm btn-link text-danger p-0">Eliminar reacción</button>
+        </form>
+    }
+</section>
+
+@* ── Comentarios ── *@
+<section id="comentarios" aria-label="Comentarios">
+    <h2 class="h5 mb-3">Comentarios (@Model.Post.Comentarios)</h2>
+
+    @if (Model.Post.PermitirComentarios)
+    {
+        <form asp-controller="Comment" asp-action="Create" method="post" class="card card-body shadow-sm mb-4">
+            <input type="hidden" name="postId" value="@Model.Post.Id" />
+            <label for="nuevo-comentario" class="form-label">Escribir un comentario</label>
+            <textarea id="nuevo-comentario" name="contenido" class="form-control mb-2" rows="2" maxlength="500"
+                      placeholder="Máximo 500 caracteres" required></textarea>
+            <div><button type="submit" class="btn btn-primary btn-sm">Comentar</button></div>
+        </form>
+    }
+    else
+    {
+        <div class="alert alert-secondary" role="status">Los comentarios están desactivados para esta publicación.</div>
+    }
+
+    @if (Model.Comentarios.Count == 0)
+    {
+        <p class="text-muted">Esta publicación todavía no tiene comentarios.</p>
+    }
+    else
+    {
+        foreach (var comentario in Model.Comentarios)
+        {
+            <partial name="_Comment" model="comentario" />
+        }
+    }
+</section>
+
+<div class="mt-4">
+    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">Volver al inicio</a>
+</div>

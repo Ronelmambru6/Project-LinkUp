@@ -1,0 +1,112 @@
+﻿@using LinkUpPro.Application.ViewModels.Battleship
+@model GameIndexViewModel
+@{
+    ViewData["Title"] = "Battleship";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">Battleship</h1>
+    <a asp-action="New" class="btn btn-primary">Nueva partida</a>
+</div>
+
+@* ── Partidas activas ── *@
+<h2 class="h5 mb-3">Partidas activas</h2>
+@if (Model.Activas.Count == 0)
+{
+    <div class="alert alert-info" role="status">No tiene partidas activas.</div>
+}
+else
+{
+    <div class="table-responsive mb-4">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Amigo</th>
+                    <th>Fecha de inicio</th>
+                    <th>Horas transcurridas</th>
+                    <th class="text-end">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var partida in Model.Activas)
+                {
+                    <tr>
+                        <td>
+                            <img src="@partida.Oponente.FotoPerfil" alt="" class="rounded-circle object-fit-cover me-2" width="32" height="32" />
+                            @@@partida.Oponente.UserName
+                        </td>
+                        <td>@partida.FechaInicio.ToLocalTime().ToString("dd/MM/yyyy hh:mm tt")</td>
+                        <td>@partida.HorasTranscurridas.ToString("0.0") h</td>
+                        <td class="text-end">
+                            <a asp-action="Enter" asp-route-id="@partida.GameId" class="btn btn-sm btn-primary">Entrar</a>
+                            <a asp-action="Surrender" asp-route-id="@partida.GameId" class="btn btn-sm btn-outline-danger">Rendirse</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@* ── Historial ── *@
+<h2 class="h5 mb-3">Historial de partidas</h2>
+
+<div class="row g-3 mb-3">
+    <div class="col-sm-4">
+        <div class="card text-center"><div class="card-body py-2"><div class="text-muted small">Jugadas</div><div class="h4 mb-0">@Model.Total</div></div></div>
+    </div>
+    <div class="col-sm-4">
+        <div class="card text-center"><div class="card-body py-2"><div class="text-muted small">Ganadas</div><div class="h4 mb-0">@Model.Ganadas</div></div></div>
+    </div>
+    <div class="col-sm-4">
+        <div class="card text-center"><div class="card-body py-2"><div class="text-muted small">Perdidas</div><div class="h4 mb-0">@Model.Perdidas</div></div></div>
+    </div>
+</div>
+
+@if (Model.Historial.Count == 0)
+{
+    <div class="alert alert-info" role="status">Todavía no ha finalizado ninguna partida.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Amigo</th>
+                    <th>Inicio</th>
+                    <th>Fin</th>
+                    <th>Duración (horas)</th>
+                    <th>Resultado</th>
+                    <th>Ganador</th>
+                    <th class="text-end"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var partida in Model.Historial)
+                {
+                    <tr>
+                        <td>@@@partida.Oponente.UserName</td>
+                        <td>@partida.FechaInicio.ToLocalTime().ToString("dd/MM/yyyy hh:mm tt")</td>
+                        <td>@partida.FechaFin.ToLocalTime().ToString("dd/MM/yyyy hh:mm tt")</td>
+                        <td>@partida.DuracionHoras.ToString("0.0")</td>
+                        <td>
+                            @if (partida.Gane)
+                            {
+                                <span class="badge text-bg-success">Ganada</span>
+                            }
+                            else
+                            {
+                                <span class="badge text-bg-danger">Perdida</span>
+                            }
+                        </td>
+                        <td>@partida.Ganador</td>
+                        <td class="text-end">
+                            <a asp-action="Result" asp-route-id="@partida.GameId" class="btn btn-sm btn-outline-primary">Ver resultado</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

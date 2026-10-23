@@ -1,0 +1,16 @@
+﻿@using LinkUpPro.Application.ViewModels.Battleship
+@model EsperaViewModel
+@{
+    ViewData["Title"] = "Esperando al oponente";
+}
+
+<h1 class="h3 mb-3">Barcos posicionados</h1>
+
+<partial name="_Board" model="Model.Tablero" />
+
+<div class="alert alert-info mt-3" role="status">
+    El otro jugador aún no termina de posicionar sus barcos. Cuando lo haga podrá comenzar la partida.
+</div>
+
+<a asp-action="Index" class="btn btn-outline-secondary">Volver atrás</a>
+<a asp-action="Enter" asp-route-id="@Model.GameId" class="btn btn-outline-primary">Refrescar pantalla</a>

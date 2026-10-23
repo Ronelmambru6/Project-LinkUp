@@ -1,0 +1,31 @@
+﻿@using LinkUpPro.Application.ViewModels.Battleship
+@model AtaqueViewModel
+@{
+    ViewData["Title"] = "Ataque";
+}
+
+<h1 class="h3 mb-1">Partida contra @@@Model.Oponente.UserName</h1>
+
+<partial name="_Board" model="Model.Tablero" />
+
+<div class="bs-legend mt-3">
+    <span><span class="bs-cell bs-hit"></span>Acierto</span>
+    <span><span class="bs-cell bs-miss"></span>Fallo</span>
+    <span><span class="bs-cell bs-empty"></span>Sin atacar</span>
+</div>
+
+@if (Model.EsMiTurno)
+{
+    <div class="alert alert-success mt-3" role="status">Es su turno. Seleccione una celda para atacar.</div>
+}
+else
+{
+    <div class="alert alert-warning mt-3" role="status">Es el turno de @@@Model.Oponente.UserName. Espere su jugada y refresque la pantalla.</div>
+}
+
+<div class="d-flex flex-wrap gap-2">
+    <a asp-action="Attack" asp-route-id="@Model.GameId" class="btn btn-outline-primary">Refrescar pantalla</a>
+    <a asp-action="Index" class="btn btn-outline-secondary">Volver atrás</a>
+    <a asp-action="MyBoard" asp-route-id="@Model.GameId" class="btn btn-outline-secondary">Ver mi tablero</a>
+    <a asp-action="Surrender" asp-route-id="@Model.GameId" asp-route-origen="ataque" class="btn btn-outline-danger">Rendirse</a>
+</div>

@@ -1,0 +1,30 @@
+﻿@using LinkUpPro.Application.ViewModels.Battleship
+@model PosicionarViewModel
+@{
+    ViewData["Title"] = "Posicionar barcos";
+}
+
+<h1 class="h3 mb-1">Posicionar barcos</h1>
+<p class="text-muted">Partida contra @@@Model.Oponente.UserName</p>
+
+<div class="card shadow-sm mb-3">
+    <div class="card-body">
+        <h2 class="h6">Barcos pendientes</h2>
+        <form asp-action="Board" method="get">
+            <input type="hidden" name="id" value="@Model.GameId" />
+            <ul class="list-group mb-3">
+                @foreach (var barco in Model.BarcosPendientes)
+                {
+                    <li class="list-group-item">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="shipId" id="barco-@barco.ShipId" value="@barco.ShipId" />
+                            <label class="form-check-label" for="barco-@barco.ShipId">Barco de @barco.Tamano casillas</label>
+                        </div>
+                    </li>
+                }
+            </ul>
+            <button type="submit" class="btn btn-primary">Posicionar barco</button>
+            <a asp-action="Index" class="btn btn-outline-secondary">Volver atrás</a>
+        </form>
+    </div>
+</div>

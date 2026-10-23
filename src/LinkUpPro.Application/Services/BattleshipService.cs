@@ -1,5 +1,6 @@
 ﻿using LinkUpPro.Application.Common;
 using LinkUpPro.Application.Dtos.Battleship;
+using LinkUpPro.Application.Dtos.Users;
 using LinkUpPro.Application.Interfaces.Repositories;
 using LinkUpPro.Application.Interfaces.Services;
 using LinkUpPro.Domain.Entities;
@@ -17,6 +18,8 @@ namespace LinkUpPro.Application.Services
         private readonly IGenericRepository<Ship> _ships;
         private readonly IGenericRepository<Move> _moves;
         private readonly IGenericRepository<Friendship> _friendships;
+        private readonly IFriendshipRepository _friendshipRepository;
+        private readonly IUserQueryRepository _users;
         private readonly IUnitOfWork _unitOfWork;
 
         public BattleshipService(
@@ -24,12 +27,16 @@ namespace LinkUpPro.Application.Services
             IGenericRepository<Ship> ships,
             IGenericRepository<Move> moves,
             IGenericRepository<Friendship> friendships,
+            IFriendshipRepository friendshipRepository,
+            IUserQueryRepository users,
             IUnitOfWork unitOfWork)
         {
             _games = games;
             _ships = ships;
             _moves = moves;
             _friendships = friendships;
+            _friendshipRepository = friendshipRepository;
+            _users = users;
             _unitOfWork = unitOfWork;
         }
 
@@ -115,6 +122,29 @@ namespace LinkUpPro.Application.Services
                 (g.CreadorId == userId || g.OponenteId == userId));
 
             return games.Select(g => OpponentOf(g, userId)).Distinct().ToList();
+        }
+
+        // Amigos activos con los que se puede iniciar una partida nueva (sin partida activa).
+        public async Task<List<UserSummaryDto>> GetAvailableOpponentsAsync(string userId)
+        {
+            var friendIds = await _friendshipRepository.GetActiveFriendIdsAsync(userId);
+            var busyIds = await GetActiveOpponentIdsAsync(userId);
+
+            var availableIds = friendIds.Except(busyIds).ToList();
+            if (availableIds.Count == 0) return new List<UserSummaryDto>();
+
+            var users = await _users.GetActiveByIdsAsync(availableIds);
+            return users.OrderBy(u => u.UserName).ToList();
+        }
+
+        // Datos de los jugadores para mostrar nombre y foto en los listados.
+        public async Task<Dictionary<string, UserSummaryDto>> GetPlayersAsync(IEnumerable<string> userIds)
+        {
+            var ids = userIds.Distinct().ToList();
+            if (ids.Count == 0) return new Dictionary<string, UserSummaryDto>();
+
+            var users = await _users.GetActiveByIdsAsync(ids);
+            return users.ToDictionary(u => u.Id);
         }
 
         // ---------------------------------------------------------------

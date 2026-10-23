@@ -1,0 +1,38 @@
+﻿@using LinkUpPro.Application.ViewModels.Battleship
+@using LinkUpPro.Domain.Enums
+@model DireccionViewModel
+@{
+    ViewData["Title"] = "Dirección del barco";
+    var direcciones = new List<SelectListItem>
+    {
+        new("Arriba", nameof(DireccionBarco.Arriba)),
+        new("Abajo", nameof(DireccionBarco.Abajo)),
+        new("Izquierda", nameof(DireccionBarco.Izquierda)),
+        new("Derecha", nameof(DireccionBarco.Derecha))
+    };
+}
+
+<h1 class="h3 mb-3">Dirección del barco</h1>
+
+<div class="card shadow-sm" style="max-width: 32rem;">
+    <div class="card-body">
+        <p>Barco de <strong>@Model.Tamano</strong> casillas, celda inicial <strong>@Model.CeldaTexto</strong>.</p>
+
+        <form asp-action="Direction" method="post"
+              asp-route-id="@Model.GameId" asp-route-shipId="@Model.ShipId"
+              asp-route-row="@Model.Fila" asp-route-column="@Model.Columna" novalidate>
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+            <div class="mb-3">
+                <label asp-for="Direccion" class="form-label">Dirección</label>
+                <select asp-for="Direccion" asp-items="direcciones" class="form-select">
+                    <option value="">Seleccione...</option>
+                </select>
+                <span asp-validation-for="Direccion" class="text-danger small"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Posicionar</button>
+            <a asp-action="Board" asp-route-id="@Model.GameId" asp-route-shipId="@Model.ShipId" class="btn btn-outline-secondary">Volver</a>
+        </form>
+    </div>
+</div>

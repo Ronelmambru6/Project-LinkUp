@@ -1,0 +1,56 @@
+﻿@using LinkUpPro.Application.ViewModels.Notifications
+@model NotificationsIndexViewModel
+@{
+    ViewData["Title"] = "Notificaciones";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">Notificaciones</h1>
+
+    @if (Model.NoLeidas > 0)
+    {
+        <form asp-action="MarkAllAsRead" method="post">
+            <button type="submit" class="btn btn-outline-primary btn-sm">Marcar todas como leídas</button>
+        </form>
+    }
+</div>
+
+@if (Model.Notificaciones.Count == 0)
+{
+    <div class="alert alert-info" role="status">No tiene notificaciones.</div>
+}
+else
+{
+    <div class="list-group shadow-sm">
+        @foreach (var notificacion in Model.Notificaciones)
+        {
+            <div class="list-group-item @(notificacion.Leida ? "" : "list-group-item-primary")">
+                <div class="d-flex align-items-start">
+                    <img src="@notificacion.Actor.FotoPerfil" alt="Foto de perfil de @notificacion.Actor.UserName"
+                         class="rounded-circle object-fit-cover me-3 flex-shrink-0" width="44" height="44" />
+
+                    <div class="flex-grow-1">
+                        <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                            <span class="fw-semibold">@@@notificacion.Actor.UserName</span>
+                            <span class="badge text-bg-light border">@notificacion.TipoTexto</span>
+                            <span class="badge @(notificacion.Leida ? "text-bg-secondary" : "text-bg-primary")">@notificacion.EstadoTexto</span>
+                        </div>
+
+                        <p class="mb-1">@notificacion.Descripcion</p>
+                        <div class="small text-muted mb-2">@notificacion.Fecha.ToLocalTime().ToString("dd/MM/yyyy hh:mm tt")</div>
+
+                        <div class="d-flex flex-wrap gap-2">
+                            <a asp-action="Open" asp-route-id="@notificacion.Id" class="btn btn-sm btn-outline-secondary">Ver contenido</a>
+                            @if (!notificacion.Leida)
+                            {
+                                <form asp-action="MarkAsRead" asp-route-id="@notificacion.Id" method="post">
+                                    <button type="submit" class="btn btn-sm btn-outline-primary">Marcar como leída</button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

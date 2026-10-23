@@ -59,6 +59,7 @@ namespace LinkUpPro.Persistence
             services.AddScoped<IFriendshipRepository, FriendshipRepository>();
             services.AddScoped<IFriendRequestRepository, FriendRequestRepository>();
             services.AddScoped<IPostRepository, PostRepository>();
+            services.AddScoped<INotificationRepository, NotificationRepository>();
 
             return services;
         }

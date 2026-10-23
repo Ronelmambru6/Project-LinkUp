@@ -37,7 +37,7 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Notification" asp-action="Index">
                                 Notificaciones
-                                @* Contador de no leídas: issue #13 *@
+                                @await Component.InvokeAsync("UnreadNotificationsCounter")
                             </a>
                         </li>
                         <li class="nav-item">

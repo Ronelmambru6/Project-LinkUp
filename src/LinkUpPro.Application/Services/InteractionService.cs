@@ -24,6 +24,7 @@ namespace LinkUpPro.Application.Services
         private readonly IPostRepository _posts;
         private readonly IGenericRepository<Comment> _comments;
         private readonly IGenericRepository<Reaction> _reactions;
+        private readonly IGenericRepository<Notification> _notifications;
         private readonly IUserQueryRepository _users;
         private readonly IFriendshipService _friendships;
         private readonly IUnitOfWork _unitOfWork;
@@ -32,6 +33,7 @@ namespace LinkUpPro.Application.Services
             IPostRepository posts,
             IGenericRepository<Comment> comments,
             IGenericRepository<Reaction> reactions,
+            IGenericRepository<Notification> notifications,
             IUserQueryRepository users,
             IFriendshipService friendships,
             IUnitOfWork unitOfWork)
@@ -39,6 +41,7 @@ namespace LinkUpPro.Application.Services
             _posts = posts;
             _comments = comments;
             _reactions = reactions;
+            _notifications = notifications;
             _users = users;
             _friendships = friendships;
             _unitOfWork = unitOfWork;
@@ -129,22 +132,26 @@ namespace LinkUpPro.Application.Services
             if (errorContenido is not null)
                 return errorContenido;
 
+            Comment? padre = null;
             if (request.ParentCommentId is int padreId)
             {
-                var padre = await _comments.GetByIdAsync(padreId);
+                padre = await _comments.GetByIdAsync(padreId);
                 if (padre is null || padre.PostId != postId || padre.IsDeleted)
                     return ServiceResult.Failure("El comentario al que intenta responder ya no se encuentra disponible.");
             }
 
-            await _comments.AddAsync(new Comment
+            var comentario = new Comment
             {
                 PostId = postId,
                 AutorId = userId,
                 ParentCommentId = request.ParentCommentId,
                 Contenido = request.Contenido.Trim(),
                 FechaCreacion = DateTime.UtcNow
-            });
+            };
+            await _comments.AddAsync(comentario);
             await _unitOfWork.SaveChangesAsync();
+
+            await NotificarComentarioAsync(post!, padre, comentario);
 
             return ServiceResult.Success();
         }
@@ -211,7 +218,7 @@ namespace LinkUpPro.Application.Services
                 return ServiceResult.Failure("La reacción seleccionada no es válida.");
 
             // Las reacciones siguen funcionando aunque los comentarios estén desactivados
-            var (_, error) = await ValidarAccesoAsync(postId, userId);
+            var (post, error) = await ValidarAccesoAsync(postId, userId);
             if (error is not null)
                 return ServiceResult.Failure(error);
 
@@ -237,8 +244,13 @@ namespace LinkUpPro.Application.Services
                 }
                 else
                 {
+                    // Misma reacción otra vez: no cambia nada y no se notifica
                     return ServiceResult.Success();
                 }
+
+                // Reacción nueva o cambiada: se notifica al autor, en la misma operación que guarda la reacción.
+                // (Eliminar una reacción no genera notificación.)
+                await AgregarNotificacionDeReaccionAsync(post!, userId, tipo);
 
                 await _unitOfWork.SaveChangesAsync();
             }
@@ -265,6 +277,67 @@ namespace LinkUpPro.Application.Services
             await _unitOfWork.SaveChangesAsync();
 
             return ServiceResult.Success();
+        }
+
+        // ───────────────────────────── Notificaciones ─────────────────────────────
+
+        // Comentario nuevo -> avisa al autor de la publicación; respuesta -> avisa al autor del comentario respondido.
+        // No se notifica a quien actúa sobre su propio contenido. Se guarda aparte porque necesita el Id del comentario,
+        // y si falla no se deshace el comentario, que ya quedó publicado.
+        private async Task NotificarComentarioAsync(PostDto post, Comment? padre, Comment comentario)
+        {
+            var destinatarioId = padre?.AutorId ?? post.AutorId;
+            if (destinatarioId == comentario.AutorId)
+                return;
+
+            try
+            {
+                var actor = await _users.GetActiveByIdAsync(comentario.AutorId);
+                if (actor is null)
+                    return;
+
+                await _notifications.AddAsync(new Notification
+                {
+                    DestinatarioId = destinatarioId,
+                    ActorId = comentario.AutorId,
+                    Tipo = padre is null ? TipoNotificacion.Comentario : TipoNotificacion.Respuesta,
+                    Descripcion = padre is null
+                        ? $"{actor.UserName} comentó tu publicación."
+                        : $"{actor.UserName} respondió tu comentario.",
+                    PostId = post.Id,
+                    CommentId = comentario.Id,
+                    Leida = false,
+                    Fecha = DateTime.UtcNow
+                });
+                await _unitOfWork.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                // La notificación es secundaria: el comentario ya se publicó correctamente
+            }
+        }
+
+        // Solo agrega la notificación al contexto: la guarda quien llama junto con la reacción
+        private async Task AgregarNotificacionDeReaccionAsync(PostDto post, string actorId, TipoReaccion tipo)
+        {
+            if (post.AutorId == actorId)
+                return;
+
+            var actor = await _users.GetActiveByIdAsync(actorId);
+            if (actor is null)
+                return;
+
+            var texto = tipo == TipoReaccion.MeGusta ? "Me gusta" : "No me gusta";
+            await _notifications.AddAsync(new Notification
+            {
+                DestinatarioId = post.AutorId,
+                ActorId = actorId,
+                Tipo = TipoNotificacion.Reaccion,
+                Descripcion = $"{actor.UserName} reaccionó con {texto} a tu publicación.",
+                PostId = post.Id,
+                Leida = false,
+                Fecha = DateTime.UtcNow
+            });
         }
 
         // ───────────────────────────── Auxiliares ─────────────────────────────

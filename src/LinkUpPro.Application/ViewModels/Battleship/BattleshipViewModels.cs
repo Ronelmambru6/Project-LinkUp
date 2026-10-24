@@ -55,6 +55,7 @@ namespace LinkUpPro.Application.ViewModels.Battleship
     public class NuevaPartidaViewModel
     {
         public List<UserSummaryViewModel> Amigos { get; set; } = new();
+        public string? Search { get; set; }
     }
 
     public class PosicionarViewModel

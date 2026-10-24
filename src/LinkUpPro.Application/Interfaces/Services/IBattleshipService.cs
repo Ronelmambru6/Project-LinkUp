@@ -13,8 +13,7 @@ namespace LinkUpPro.Application.Interfaces.Services
         // Listados de la pantalla principal
         Task<List<GameListItemDto>> GetActiveGamesAsync(string userId);
         Task<GameHistoryDto> GetHistoryAsync(string userId);
-        Task<List<string>> GetActiveOpponentIdsAsync(string userId);
-        Task<List<UserSummaryDto>> GetAvailableOpponentsAsync(string userId);
+        Task<List<UserSummaryDto>> GetAvailableOpponentsAsync(string userId, string? search = null);
         Task<Dictionary<string, UserSummaryDto>> GetPlayersAsync(IEnumerable<string> userIds);
 
         // Crear partida y revisar a qué pantalla debe ir el usuario

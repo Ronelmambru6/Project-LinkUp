@@ -2,33 +2,58 @@
 @model NuevaPartidaViewModel
 @{
     ViewData["Title"] = "Nueva partida";
+    var hayBusqueda = !string.IsNullOrWhiteSpace(Model.Search);
 }
 
-<h1 class="h3 mb-4">Nueva partida</h1>
+<h1 class="h3 mb-4">Nueva partida de Battleship</h1>
 
-@if (Model.Amigos.Count == 0)
-{
-    <div class="alert alert-info" role="status">
-        No tiene amigos disponibles para iniciar una partida nueva. Solo puede jugar con amigos con los que no tenga una partida activa.
+@* Buscador por nombre de usuario (GET: no modifica nada) *@
+<form asp-action="New" method="get" class="row g-2 mb-4" role="search">
+    <div class="col-sm">
+        <label for="search" class="visually-hidden">Nombre de usuario</label>
+        <input id="search" name="search" value="@Model.Search" class="form-control" placeholder="Buscar amigo por nombre de usuario" />
     </div>
-}
-else
-{
-    <p class="text-muted">Seleccione el amigo con el que quiere jugar.</p>
-    <div class="list-group mb-3">
-        @foreach (var amigo in Model.Amigos)
-        {
-            <form asp-action="Create" method="post" class="list-group-item d-flex align-items-center">
-                <img src="@amigo.FotoPerfil" alt="" class="rounded-circle object-fit-cover me-3" width="40" height="40" />
-                <div class="flex-grow-1">
-                    <div class="fw-semibold">@amigo.NombreCompleto</div>
-                    <div class="text-muted small">@@@amigo.UserName</div>
-                </div>
-                <input type="hidden" name="oponenteId" value="@amigo.Id" />
-                <button type="submit" class="btn btn-sm btn-primary">Jugar</button>
-            </form>
-        }
+    <div class="col-sm-auto d-flex gap-2">
+        <button type="submit" class="btn btn-outline-primary">Buscar</button>
+        <a asp-action="New" class="btn btn-outline-secondary">Limpiar búsqueda</a>
     </div>
-}
+</form>
 
-<a asp-action="Index" class="btn btn-outline-secondary">Volver atrás</a>
+<form asp-action="Create" method="post">
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            @if (!Model.Amigos.Any())
+            {
+                <p class="text-muted mb-0">
+                    @(hayBusqueda
+                        ? "No se encontraron amigos disponibles con el nombre ingresado."
+                        : "No tiene amigos disponibles para iniciar una partida.")
+                </p>
+            }
+            else
+            {
+                <ul class="list-group list-group-flush">
+                    @foreach (var amigo in Model.Amigos)
+                    {
+                        var idRadio = $"amigo-{amigo.Id}";
+                        <li class="list-group-item px-0">
+                            <label class="d-flex align-items-center gap-3 w-100" for="@idRadio" role="button">
+                                @* Radio: solo se puede seleccionar un amigo a la vez *@
+                                <input type="radio" class="form-check-input mt-0" id="@idRadio"
+                                       name="oponenteId" value="@amigo.Id" />
+                                <img src="@amigo.FotoPerfil" alt="Foto de @amigo.UserName"
+                                     class="rounded-circle object-fit-cover" width="48" height="48" />
+                                <span class="fw-semibold">@@@amigo.UserName</span>
+                            </label>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between">
+        <a asp-action="Index" class="btn btn-outline-secondary">Volver atrás</a>
+        <button type="submit" class="btn btn-primary" disabled="@(!Model.Amigos.Any())">Iniciar partida</button>
+    </div>
+</form>

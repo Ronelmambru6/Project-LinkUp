@@ -1,0 +1,83 @@
+@model FriendsIndexViewModel
+@{
+    ViewData["Title"] = "Amigos";
+    var hayBusqueda = !string.IsNullOrWhiteSpace(Model.Search);
+}
+
+<h1 class="h3 mb-4">Amigos</h1>
+
+@* ── Resumen de amistades ── *@
+<div class="row g-3 mb-4">
+    <div class="col-sm-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-muted small">Total de amigos</div>
+                <div class="display-6 fw-semibold">@Model.TotalAmigos</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="text-muted small">Publicaciones disponibles</div>
+                <div class="display-6 fw-semibold">@Model.PublicacionesDisponibles</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* ── Publicaciones de amigos: issue #21 ── *@
+
+@* ── Listado de amigos ── *@
+<section class="card shadow-sm">
+    <div class="card-header bg-white">
+        <h2 class="h5 mb-0">Mis amigos</h2>
+    </div>
+    <div class="card-body">
+        @* Buscador por nombre, apellido o nombre de usuario (GET: no modifica nada) *@
+        <form asp-action="Index" method="get" class="row g-2 mb-3" role="search">
+            <div class="col-sm">
+                <label for="search" class="visually-hidden">Criterio de búsqueda</label>
+                <input id="search" name="search" value="@Model.Search" class="form-control"
+                       placeholder="Buscar por nombre, apellido o nombre de usuario" />
+            </div>
+            <div class="col-sm-auto d-flex gap-2">
+                <button type="submit" class="btn btn-outline-primary">Buscar</button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Limpiar búsqueda</a>
+            </div>
+        </form>
+
+        @if (!Model.Amigos.Any())
+        {
+            <p class="text-muted mb-0">
+                @(hayBusqueda
+                    ? "No se encontraron amigos que coincidan con el criterio ingresado."
+                    : "Todavía no tiene amigos agregados.")
+            </p>
+        }
+        else
+        {
+            <ul class="list-group list-group-flush">
+                @foreach (var amigo in Model.Amigos)
+                {
+                    <li class="list-group-item px-0">
+                        <div class="d-flex flex-wrap align-items-center gap-3">
+                            <img src="@amigo.Usuario.FotoPerfil" alt="Foto de @amigo.Usuario.UserName"
+                                 class="rounded-circle object-fit-cover" width="56" height="56" />
+                            <div class="flex-grow-1">
+                                <div class="fw-semibold">@amigo.Usuario.Nombre @amigo.Usuario.Apellido</div>
+                                <a asp-action="Profile" asp-route-id="@amigo.Usuario.Id" class="small">@@@amigo.Usuario.UserName</a>
+                                <div class="small">
+                                    <a asp-action="MutualFriends" asp-route-id="@amigo.Usuario.Id">
+                                        @amigo.AmigosEnComun amigo(s) en común
+                                    </a>
+                                </div>
+                            </div>
+                            <a asp-action="Remove" asp-route-id="@amigo.Usuario.Id" class="btn btn-outline-danger btn-sm">Eliminar amigo</a>
+                        </div>
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+</section>

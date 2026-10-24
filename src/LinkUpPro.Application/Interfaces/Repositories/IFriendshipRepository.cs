@@ -9,5 +9,8 @@ namespace LinkUpPro.Application.Interfaces.Repositories
 
         // Ids de los amigos con amistad activa y cuenta activa
         Task<List<string>> GetActiveFriendIdsAsync(string userId);
+
+        // Publicaciones "Solo amigos" no eliminadas, creadas por los amigos activos del usuario
+        Task<int> CountAvailableFriendPostsAsync(string userId);
     }
 }

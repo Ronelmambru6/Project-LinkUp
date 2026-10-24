@@ -10,8 +10,11 @@ namespace LinkUpPro.Application.Services
     public class NotificationService : INotificationService
     {
         private const string NoEncontrada = "La notificación no existe o no le pertenece.";
+        private const string ContenidoEliminado = "El contenido relacionado con esta notificación ya no se encuentra disponible.";
+        private const string ContenidoSinAcceso = "El contenido relacionado con esta notificación ya no se encuentra disponible para usted.";
 
         private readonly INotificationRepository _notifications;
+        private readonly IPostRepository _posts;
         private readonly IGenericRepository<Comment> _comments;
         private readonly IUserQueryRepository _users;
         private readonly IPostService _postService;
@@ -19,12 +22,14 @@ namespace LinkUpPro.Application.Services
 
         public NotificationService(
             INotificationRepository notifications,
+            IPostRepository posts,
             IGenericRepository<Comment> comments,
             IUserQueryRepository users,
             IPostService postService,
             IUnitOfWork unitOfWork)
         {
             _notifications = notifications;
+            _posts = posts;
             _comments = comments;
             _users = users;
             _postService = postService;
@@ -91,19 +96,26 @@ namespace LinkUpPro.Application.Services
             if (notificacion is null || notificacion.DestinatarioId != userId)
                 return ServiceResult<NotificationTargetDto>.Failure(NoEncontrada);
 
-            if (notificacion.PostId is not int postId)
-                return ServiceResult<NotificationTargetDto>.Failure("El contenido de esta notificación ya no se encuentra disponible.");
+            if (notificacion.PostId is not { } postId)
+                return ServiceResult<NotificationTargetDto>.Failure(ContenidoEliminado);
 
-            // El servicio de publicaciones ya devuelve "ya no se encuentra disponible" o "No posee permisos…"
+            // La notificación no concede acceso: se validan de nuevo la amistad y la privacidad
             var publicacion = await _postService.GetForViewAsync(postId, userId);
             if (!publicacion.Succeeded)
-                return ServiceResult<NotificationTargetDto>.Failure(publicacion.FirstError);
+            {
+                // Si la publicación fue eliminada → "ya no se encuentra disponible".
+                // Si existe pero ya no tiene acceso (dejaron de ser amigos, pasó a Solo yo,
+                // o la cuenta del autor está inactiva) → "ya no se encuentra disponible para usted".
+                var post = await _posts.GetItemAsync(postId);
+                return ServiceResult<NotificationTargetDto>.Failure(
+                    post is null || post.IsDeleted ? ContenidoEliminado : ContenidoSinAcceso);
+            }
 
-            if (notificacion.CommentId is int commentId)
+            if (notificacion.CommentId is { } commentId)
             {
                 var comentario = await _comments.GetByIdAsync(commentId);
                 if (comentario is null || comentario.IsDeleted)
-                    return ServiceResult<NotificationTargetDto>.Failure("Este comentario ya no se encuentra disponible.");
+                    return ServiceResult<NotificationTargetDto>.Failure(ContenidoEliminado);
             }
 
             return ServiceResult<NotificationTargetDto>.Success(new NotificationTargetDto

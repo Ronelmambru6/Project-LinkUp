@@ -18,7 +18,7 @@ namespace LinkUpPro.Application.Services
         private const string CuentaInactiva = "Su cuenta no se encuentra activa.";
         private const string ComentariosDesactivados = "Los comentarios están desactivados para esta publicación.";
         private const string ComentarioNoDisponible = "Este comentario ya no se encuentra disponible.";
-        private const string SinPermisoEditar = "No posee permisos para editar este comentario.";
+        private const string SinPermisoEditar = "No posee permisos para editar este contenido.";
         private const string SinPermisoEliminar = "No posee permisos para eliminar este comentario.";
 
         private readonly IPostRepository _posts;

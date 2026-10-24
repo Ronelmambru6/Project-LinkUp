@@ -6,10 +6,10 @@ namespace LinkUpPro.Application.ViewModels.Account
     public class ResetPasswordViewModel
     {
         // Llegan en el enlace del correo y viajan como campos ocultos del formulario
-        [Required]
+        [Required(ErrorMessage = "El enlace para restablecer la contraseña no es válido")]
         public string UserId { get; set; } = string.Empty;
-
-        [Required]
+        
+        [Required(ErrorMessage = "El enlace para restablecer la contraseña no es válido")]
         public string Token { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "La nueva contraseña es obligatoria.")]

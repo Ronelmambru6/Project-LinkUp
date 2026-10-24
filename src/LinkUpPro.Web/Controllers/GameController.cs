@@ -73,10 +73,14 @@ namespace LinkUpPro.Web.Controllers
         // ───────────────────────────── Nueva partida ─────────────────────────────
 
         [HttpGet]
-        public async Task<IActionResult> New()
+        public async Task<IActionResult> New(string? search)
         {
-            var amigos = await _battleship.GetAvailableOpponentsAsync(UserId);
-            return View(new NuevaPartidaViewModel { Amigos = _mapper.Map<List<UserSummaryViewModel>>(amigos) });
+            var amigos = await _battleship.GetAvailableOpponentsAsync(UserId, search);
+            return View(new NuevaPartidaViewModel
+            {
+                Search = search?.Trim(),
+                Amigos = _mapper.Map<List<UserSummaryViewModel>>(amigos)
+            });
         }
 
         [HttpPost]
@@ -290,7 +294,7 @@ namespace LinkUpPro.Web.Controllers
             if (!ataque.YaAtacada)
             {
                 TempData["Success"] = ataque.Acierto
-                    ? (ataque.TamanoBarcoHundido is int tamano
+                    ? (ataque.TamanoBarcoHundido is { } tamano
                         ? $"¡Acierto! Hundió un barco de {tamano} casillas."
                         : "¡Acierto!")
                     : "Fallo. Es el turno de su oponente.";

@@ -1,6 +1,7 @@
 ﻿using LinkUpPro.Application.Common;
 using LinkUpPro.Application.Interfaces.Repositories;
 using LinkUpPro.Persistence.Contexts;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace LinkUpPro.Persistence.Repositories
@@ -24,6 +25,11 @@ namespace LinkUpPro.Persistence.Repositories
             {
                 // Otro usuario modificó el mismo registro al mismo tiempo
                 throw new ConcurrencyException("El registro fue modificado por otra operación.", ex);
+            }
+            catch (DbUpdateException ex) when (ex.InnerException is SqlException { Number: 2601 or 2627 })
+            {
+                // Un índice único rechazó el registro: otra solicitud igual llegó primero
+                throw new DuplicateRecordException("Ya existe un registro con los mismos datos.", ex);
             }
         }
 

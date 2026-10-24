@@ -125,7 +125,8 @@ namespace LinkUpPro.Application.Services
         }
 
         // Amigos activos con los que se puede iniciar una partida nueva (sin partida activa).
-        public async Task<List<UserSummaryDto>> GetAvailableOpponentsAsync(string userId)
+        // El buscador ignora mayúsculas y espacios al inicio y al final, y acepta coincidencias parciales.
+        public async Task<List<UserSummaryDto>> GetAvailableOpponentsAsync(string userId, string? search = null)
         {
             var friendIds = await _friendshipRepository.GetActiveFriendIdsAsync(userId);
             var busyIds = await GetActiveOpponentIdsAsync(userId);
@@ -134,9 +135,15 @@ namespace LinkUpPro.Application.Services
             if (availableIds.Count == 0) return new List<UserSummaryDto>();
 
             var users = await _users.GetActiveByIdsAsync(availableIds);
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var filtro = search.Trim();
+                users = users.Where(u => u.UserName.Contains(filtro, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+
             return users.OrderBy(u => u.UserName).ToList();
         }
-
         // Datos de los jugadores para mostrar nombre y foto en los listados.
         public async Task<Dictionary<string, UserSummaryDto>> GetPlayersAsync(IEnumerable<string> userIds)
         {
@@ -158,6 +165,9 @@ namespace LinkUpPro.Application.Services
 
             if (creatorId == opponentId)
                 return OperationResult<int>.Fail("No puede iniciar una partida contra usted mismo.");
+            
+            if (!await _users.IsActiveAsync(creatorId) || !await _users.IsActiveAsync(opponentId))
+                return OperationResult<int>.Fail("No se puede iniciar la partida porque uno de los usuarios se encuentra inactivo.");
 
             var areFriends = await _friendships.ExistsAsync(f =>
                 f.Estado == EstadoAmistad.Activa &&
@@ -191,7 +201,16 @@ namespace LinkUpPro.Application.Services
             }
 
             await _games.AddAsync(game);
-            await _unitOfWork.SaveChangesAsync();
+
+            try
+            {
+                await _unitOfWork.SaveChangesAsync();
+            }
+            catch (DuplicateRecordException)
+            {
+                // Doble clic o dos pestañas: la otra solicitud ya creó la partida
+                return OperationResult<int>.Fail("Ya tiene una partida activa con este amigo.");
+            }
 
             return OperationResult<int>.Ok(game.Id);
         }
@@ -551,7 +570,7 @@ namespace LinkUpPro.Application.Services
                 await _unitOfWork.SaveChangesAsync();
                 return true;
             }
-            catch (ConcurrencyException)
+            catch (Exception ex) when (ex is ConcurrencyException or DuplicateRecordException)
             {
                 return false;
             }
@@ -559,7 +578,7 @@ namespace LinkUpPro.Application.Services
 
         private static List<(int Row, int Column)> CellsOf(Ship ship)
         {
-            if (ship.FilaInicio is int row && ship.ColumnaInicio is int column && ship.Direccion is DireccionBarco direction)
+            if (ship.FilaInicio is { } row && ship.ColumnaInicio is { } column && ship.Direccion is { } direction)
                 return BattleshipRules.GetShipCells(row, column, ship.Tamano, direction);
 
             return new List<(int Row, int Column)>();

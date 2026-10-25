@@ -100,6 +100,9 @@ namespace LinkUpPro.Application.ViewModels.Battleship
         public TableroViewModel MiAtaque { get; set; } = new();
         public TableroViewModel AtaqueOponente { get; set; } = new();
         public TableroViewModel MiPosicionamiento { get; set; } = new();
+        
+        // Tablero que se está mostrando: "ataque" (por defecto), "oponente" o "posicionamiento"
+        public string Vista { get; set; } = "ataque";
     }
 
     public class RendirseViewModel

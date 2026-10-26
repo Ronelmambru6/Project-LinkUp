@@ -38,6 +38,33 @@ namespace LinkUpPro.Persistence.Repositories
             var consulta = _dbSet.AsNoTracking()
                 .Where(p => p.AutorId == criteria.AutorId && !p.IsDeleted);
 
+            return await AplicarFiltros(consulta, criteria)
+                .OrderByDescending(p => p.FechaCreacion)
+                .ThenByDescending(p => p.Id)
+                .Select(AResumen)
+                .ToListAsync();
+        }
+
+        public async Task<List<PostDto>> SearchFriendsPostsAsync(ICollection<string> autorIds, PostSearchCriteria criteria)
+        {
+            if (autorIds.Count == 0)
+                return new List<PostDto>();
+
+            // Enunciado (Amigos): solo publicaciones activas, no eliminadas y con privacidad "Solo amigos"
+            var ids = autorIds.ToList();
+            var consulta = _dbSet.AsNoTracking()
+                .Where(p => ids.Contains(p.AutorId) && !p.IsDeleted && p.Privacidad == Privacidad.SoloAmigos);
+
+            return await AplicarFiltros(consulta, criteria)
+                .OrderByDescending(p => p.FechaCreacion)
+                .ThenByDescending(p => p.Id)
+                .Select(AResumen)
+                .ToListAsync();
+        }
+
+        // Filtros comunes del Home y de Amigos: texto, tipo de contenido, fechas y estado de edición
+        private static IQueryable<Post> AplicarFiltros(IQueryable<Post> consulta, PostSearchCriteria criteria)
+        {
             if (!string.IsNullOrWhiteSpace(criteria.Texto))
             {
                 // Sin distinguir mayúsculas y sin espacios al inicio ni al final
@@ -54,18 +81,12 @@ namespace LinkUpPro.Persistence.Repositories
             if (criteria.HastaUtcExclusivo is DateTime hasta)
                 consulta = consulta.Where(p => p.FechaCreacion < hasta);
 
-            consulta = criteria.Edicion switch
+            return criteria.Edicion switch
             {
                 FiltroEdicion.Editadas => consulta.Where(p => p.FechaModificacion != null),
                 FiltroEdicion.NoEditadas => consulta.Where(p => p.FechaModificacion == null),
                 _ => consulta
             };
-
-            return await consulta
-                .OrderByDescending(p => p.FechaCreacion)
-                .ThenByDescending(p => p.Id)
-                .Select(AResumen)
-                .ToListAsync();
         }
 
         public Task<PostDto?> GetItemAsync(int postId) =>

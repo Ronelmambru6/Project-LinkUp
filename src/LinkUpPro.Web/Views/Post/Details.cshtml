@@ -79,5 +79,13 @@
 </section>
 
 <div class="mt-4">
-    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">Volver al inicio</a>
+    @if (Model.Post.EsAutor)
+    {
+        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">Volver al inicio</a>
+    }
+    else
+    {
+        @* Publicación de un amigo: se vuelve a la pantalla Amigos *@
+        <a asp-controller="Friend" asp-action="Index" class="btn btn-outline-secondary">Volver a Amigos</a>
+    }
 </div>

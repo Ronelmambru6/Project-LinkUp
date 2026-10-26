@@ -26,6 +26,9 @@ namespace LinkUpPro.Application.ViewModels.Posts
         // los botones Editar y Eliminar solo se muestran al autor
         public bool EsAutor { get; set; }
 
+        // El controlador lo activa cuando el autor es un amigo: su nombre y foto enlazan a su perfil
+        public bool PuedeVerPerfilAutor { get; set; }
+
         public bool Editada => FechaModificacion.HasValue;
 
         public string PrivacidadTexto => Privacidad == Privacidad.SoloAmigos ? "Solo amigos" : "Solo yo";

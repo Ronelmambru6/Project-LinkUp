@@ -2,6 +2,20 @@
 @{
     ViewData["Title"] = "Amigos";
     var hayBusqueda = !string.IsNullOrWhiteSpace(Model.Search);
+
+    // Filtros de publicaciones activos, para conservarlos al usar el buscador de amigos
+    var f = Model.Filtros;
+    var filtrosActuales = new Dictionary<string, string?>
+    {
+        ["Texto"] = f.Texto,
+        ["AmigoId"] = f.AmigoId,
+        ["TipoContenido"] = f.TipoContenido?.ToString(),
+        ["FechaDesde"] = f.FechaDesde?.ToString("yyyy-MM-dd"),
+        ["FechaHasta"] = f.FechaHasta?.ToString("yyyy-MM-dd"),
+        ["Edicion"] = f.Edicion == LinkUpPro.Application.Dtos.Posts.FiltroEdicion.Todas ? null : f.Edicion.ToString()
+    }
+    .Where(x => !string.IsNullOrWhiteSpace(x.Value))
+    .ToDictionary(x => x.Key, x => x.Value!);
 }
 
 <h1 class="h3 mb-4">Amigos</h1>
@@ -26,7 +40,35 @@
     </div>
 </div>
 
-@* ── Publicaciones de amigos: issue #21 ── *@
+@* ── Publicaciones de amigos ── *@
+<section class="mb-4" aria-labelledby="titulo-publicaciones">
+    <h2 id="titulo-publicaciones" class="h5 mb-3">Publicaciones de amigos</h2>
+
+    @if (Model.AmigosFiltro.Count == 0)
+    {
+        <div class="alert alert-info" role="status">Todavía no tiene amigos agregados.</div>
+    }
+    else
+    {
+        <partial name="_FriendPostFilters" model="Model" />
+
+        @if (Model.Publicaciones.Count == 0)
+        {
+            <div class="alert alert-info" role="status">
+                @(Model.BusquedaConFiltros
+                    ? "No se encontraron publicaciones que coincidan con los criterios seleccionados."
+                    : "Sus amigos todavía no han realizado publicaciones disponibles para usted.")
+            </div>
+        }
+        else
+        {
+            foreach (var publicacion in Model.Publicaciones)
+            {
+                <partial name="_Post" model="publicacion" />
+            }
+        }
+    }
+</section>
 
 @* ── Listado de amigos ── *@
 <section class="card shadow-sm">
@@ -36,6 +78,10 @@
     <div class="card-body">
         @* Buscador por nombre, apellido o nombre de usuario (GET: no modifica nada) *@
         <form asp-action="Index" method="get" class="row g-2 mb-3" role="search">
+            @foreach (var (nombre, valor) in filtrosActuales)
+            {
+                <input type="hidden" name="@nombre" value="@valor" />
+            }
             <div class="col-sm">
                 <label for="search" class="visually-hidden">Criterio de búsqueda</label>
                 <input id="search" name="search" value="@Model.Search" class="form-control"
@@ -43,7 +89,7 @@
             </div>
             <div class="col-sm-auto d-flex gap-2">
                 <button type="submit" class="btn btn-outline-primary">Buscar</button>
-                <a asp-action="Index" class="btn btn-outline-secondary">Limpiar búsqueda</a>
+                <a asp-action="Index" asp-all-route-data="filtrosActuales" class="btn btn-outline-secondary">Limpiar búsqueda</a>
             </div>
         </form>
 

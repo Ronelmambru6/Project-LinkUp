@@ -10,7 +10,7 @@ namespace LinkUpPro.Application.Services
 {
     public class BattleshipService : IBattleshipService
     {
-        private const string GameNotFoundMessage = "La partida seleccionada no existe o no le pertenece.";
+        private const string GameNotFoundMessage = "No posee permisos para realizar esta acción.";
         private const string ConflictMessage = "La partida cambió mientras realizaba la acción. Actualice la pantalla e intente de nuevo.";
         private const string InvalidCellMessage = "La celda seleccionada no es válida.";
 

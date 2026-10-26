@@ -9,7 +9,7 @@ namespace LinkUpPro.Application.Services
 {
     public class NotificationService : INotificationService
     {
-        private const string NoEncontrada = "La notificación no existe o no le pertenece.";
+        private const string NoEncontrada = "No posee permisos para realizar esta acción.";
         private const string ContenidoEliminado = "El contenido relacionado con esta notificación ya no se encuentra disponible.";
         private const string ContenidoSinAcceso = "El contenido relacionado con esta notificación ya no se encuentra disponible para usted.";
 

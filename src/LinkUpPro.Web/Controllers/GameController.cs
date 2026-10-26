@@ -359,7 +359,7 @@ namespace LinkUpPro.Web.Controllers
         // ───────────────────────────── Resultado ─────────────────────────────
 
         [HttpGet]
-        public async Task<IActionResult> Result(int id)
+        public async Task<IActionResult> Result(int id, string? vista)
         {
             var resultado = await _battleship.GetResultAsync(id, UserId);
             if (!resultado.Succeeded || resultado.Data is null)
@@ -376,7 +376,10 @@ namespace LinkUpPro.Web.Controllers
                 Ganador = datos.Gane ? "Yo" : oponente.UserName,
                 MiAtaque = new TableroViewModel { GameId = id, Celdas = datos.MiTableroAtaque, Titulo = "Mi tablero de ataque" },
                 AtaqueOponente = new TableroViewModel { GameId = id, Celdas = datos.TableroAtaqueOponente, Titulo = $"Tablero de ataque de @{oponente.UserName}" },
-                MiPosicionamiento = new TableroViewModel { GameId = id, Celdas = datos.MiTableroPosicionamiento, Titulo = "Mi posicionamiento" }
+                MiPosicionamiento = new TableroViewModel { GameId = id, Celdas = datos.MiTableroPosicionamiento, Titulo = "Mi tablero de posicionamiento" },
+
+                // Cualquier valor desconocido en la URL muestra el tablero propio
+                Vista = vista is "oponente" or "posicionamiento" ? vista : "ataque"
             });
         }
 

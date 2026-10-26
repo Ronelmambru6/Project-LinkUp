@@ -2,6 +2,13 @@
 @model ResultadoViewModel
 @{
     ViewData["Title"] = "Resultado";
+
+    var tablero = Model.Vista switch
+    {
+        "oponente" => Model.AtaqueOponente,
+        "posicionamiento" => Model.MiPosicionamiento,
+        _ => Model.MiAtaque
+    };
 }
 
 <h1 class="h3 mb-1">Resultado de la partida</h1>
@@ -16,16 +23,35 @@ else
     <div class="alert alert-danger" role="status">Perdió la partida.</div>
 }
 
-<div class="row g-4 mb-3">
-    <div class="col-xl-4"><partial name="_Board" model="Model.MiAtaque" /></div>
-    <div class="col-xl-4"><partial name="_Board" model="Model.AtaqueOponente" /></div>
-    <div class="col-xl-4"><partial name="_Board" model="Model.MiPosicionamiento" /></div>
+@* Un tablero a la vez. Partida finalizada: las celdas no hacen nada al hacer clic *@
+<div class="mb-3">
+    <partial name="_Board" model="tablero" />
 </div>
 
-<div class="bs-legend mb-3">
-    <span><span class="bs-cell bs-hit"></span>Acierto</span>
-    <span><span class="bs-cell bs-miss"></span>Fallo</span>
-    <span><span class="bs-cell bs-ship"></span>Barco</span>
+<div class="bs-legend mb-4">
+    @if (Model.Vista == "posicionamiento")
+    {
+        <span><span class="bs-cell bs-ship"></span>Barco</span>
+    }
+    else
+    {
+        <span><span class="bs-cell bs-hit"></span>Acierto</span>
+        <span><span class="bs-cell bs-miss"></span>Fallo</span>
+    }
 </div>
 
-<a asp-action="Index" class="btn btn-outline-secondary">Volver</a>
+<div class="d-flex flex-wrap gap-2">
+    @if (Model.Vista != "ataque")
+    {
+        <a asp-action="Result" asp-route-id="@tablero.GameId" class="btn btn-outline-primary">Ver mi tablero de ataque</a>
+    }
+    @if (Model.Vista != "oponente")
+    {
+        <a asp-action="Result" asp-route-id="@tablero.GameId" asp-route-vista="oponente" class="btn btn-outline-primary">Ver tablero del otro jugador</a>
+    }
+    @if (Model.Vista != "posicionamiento")
+    {
+        <a asp-action="Result" asp-route-id="@tablero.GameId" asp-route-vista="posicionamiento" class="btn btn-outline-primary">Ver mi tablero de posicionamiento</a>
+    }
+    <a asp-action="Index" class="btn btn-outline-secondary">Volver atrás</a>
+</div>

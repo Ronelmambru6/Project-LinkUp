@@ -25,5 +25,17 @@ namespace LinkUpPro.Persistence.Repositories
                 .Where(amigoId => usuariosActivos.Contains(amigoId))
                 .ToListAsync();
         }
+
+        public async Task<int> CountAvailableFriendPostsAsync(string userId)
+        {
+            var amigos = await GetActiveFriendIdsAsync(userId);
+            if (amigos.Count == 0)
+                return 0;
+
+            return await _context.Posts.CountAsync(p =>
+                amigos.Contains(p.AutorId) &&
+                !p.IsDeleted &&
+                p.Privacidad == Privacidad.SoloAmigos);
+        }
     }
 }

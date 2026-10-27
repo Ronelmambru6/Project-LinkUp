@@ -6,8 +6,8 @@ Red social desarrollada en ASP.NET Core MVC con arquitectura en capas. Permite r
 
 | Nombre | Matrícula | GitHub |
 |---|---|---|
-| NOMBRE COMPLETO | 0000-0000 | [@Ronelmambru6](https://github.com/Ronelmambru6) |
-| NOMBRE COMPLETO | 0000-0000 | [@IbnFrias](https://github.com/IbnFrias) |
+| RONEL MAMBRU FIDEL | 2024-2438 | [@Ronelmambru6](https://github.com/Ronelmambru6) |
+| IBN MOISES FRIAS GOMEZ | 2024-2504 | [@IbnFrias](https://github.com/IbnFrias) |
 
 ## Requisitos
 

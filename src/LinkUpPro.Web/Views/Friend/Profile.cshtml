@@ -1,0 +1,36 @@
+@model FriendProfileViewModel
+@{
+    ViewData["Title"] = Model.Usuario.UserName;
+}
+
+@* ── Datos del amigo ── *@
+<div class="card shadow-sm mb-4">
+    <div class="card-body d-flex flex-wrap align-items-center gap-4">
+        <img src="@Model.Usuario.FotoPerfil" alt="Foto de perfil de @Model.Usuario.UserName"
+             class="rounded-circle object-fit-cover" width="112" height="112" />
+        <div>
+            <h1 class="h3 mb-1">@Model.Usuario.NombreCompleto</h1>
+            <div class="text-muted mb-2">@@@Model.Usuario.UserName</div>
+            <a asp-action="MutualFriends" asp-route-id="@Model.Usuario.Id">
+                @Model.AmigosEnComun amigo(s) en común
+            </a>
+        </div>
+    </div>
+</div>
+
+@* ── Publicaciones "Solo amigos" del amigo, de la más reciente a la más antigua ── *@
+<h2 class="h5 mb-3">Publicaciones</h2>
+
+@if (Model.Publicaciones.Count == 0)
+{
+    <div class="alert alert-info" role="status">Este amigo todavía no ha realizado publicaciones disponibles para usted.</div>
+}
+else
+{
+    foreach (var publicacion in Model.Publicaciones)
+    {
+        <partial name="_Post" model="publicacion" />
+    }
+}
+
+<a asp-action="Index" class="btn btn-outline-secondary">Volver atrás</a>

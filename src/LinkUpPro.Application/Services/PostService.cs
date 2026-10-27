@@ -283,13 +283,17 @@ namespace LinkUpPro.Application.Services
             return ServiceResult<PostDto>.Success(publicacion);
         }
 
-        // Solo yo: únicamente el autor. Solo amigos: el autor y sus amigos actuales.
+        // Solo yo: únicamente el autor. Solo amigos: el autor y sus amigos actuales, con la cuenta del autor activa.
         private async Task<bool> PuedeVerAsync(PostDto publicacion, string viewerId)
         {
             if (publicacion.AutorId == viewerId)
                 return true;
 
             if (publicacion.Privacidad != Privacidad.SoloAmigos)
+                return false;
+
+            // Enunciado: la publicación de una cuenta inactiva deja de ser visible para los demás
+            if (!await _userQueryRepository.IsActiveAsync(publicacion.AutorId))
                 return false;
 
             return await _friendshipService.AreFriendsAsync(publicacion.AutorId, viewerId);

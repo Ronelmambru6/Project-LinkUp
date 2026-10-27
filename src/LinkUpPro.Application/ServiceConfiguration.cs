@@ -17,6 +17,7 @@ namespace LinkUpPro.Application
             services.AddScoped<IFriendshipService, FriendshipService>();
             services.AddScoped<IFriendRequestService, FriendRequestService>();
             services.AddScoped<IPostService, PostService>();
+            services.AddScoped<IFriendFeedService, FriendFeedService>();
             services.AddScoped<IInteractionService, InteractionService>();
             services.AddScoped<INotificationService, NotificationService>();
 
@@ -26,4 +27,4 @@ namespace LinkUpPro.Application
             return services;
         }
     }
-}
+}

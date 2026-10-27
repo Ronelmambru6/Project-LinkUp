@@ -1,0 +1,66 @@
+@using LinkUpPro.Application.Dtos.Posts
+@using LinkUpPro.Domain.Enums
+@model FriendsIndexViewModel
+@{
+    var f = Model.Filtros;
+}
+
+@* GET: buscar no modifica nada. Se conserva la búsqueda del listado de amigos *@
+<form method="get" asp-controller="Friend" asp-action="Index" class="card card-body shadow-sm mb-4" novalidate>
+    <h3 class="h6 mb-3">Buscar y filtrar publicaciones de amigos</h3>
+    <input type="hidden" name="search" value="@Model.Search" />
+
+    @foreach (var error in Model.ErroresFiltro)
+    {
+        <div class="alert alert-danger py-2" role="alert">@error</div>
+    }
+
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label for="amigos-texto" class="form-label">Texto de búsqueda</label>
+            <input id="amigos-texto" name="Texto" class="form-control" value="@f.Texto" maxlength="200" />
+        </div>
+        <div class="col-md-4">
+            <label for="amigos-amigo" class="form-label">Amigo</label>
+            <select id="amigos-amigo" name="AmigoId" class="form-select">
+                <option value="">Todos</option>
+                @* Solo amigos activos: el servicio vuelve a comprobar la amistad al filtrar *@
+                @foreach (var amigo in Model.AmigosFiltro)
+                {
+                    <option value="@amigo.Id" selected="@(f.AmigoId == amigo.Id)">@amigo.NombreCompleto (@@@amigo.UserName)</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="amigos-tipo" class="form-label">Tipo de contenido</label>
+            <select id="amigos-tipo" name="TipoContenido" class="form-select">
+                <option value="">Todos</option>
+                <option value="Imagen" selected="@(f.TipoContenido == TipoContenido.Imagen)">Imagen</option>
+                <option value="YouTube" selected="@(f.TipoContenido == TipoContenido.YouTube)">Video de YouTube</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="amigos-desde" class="form-label">Fecha desde</label>
+            <input id="amigos-desde" name="FechaDesde" type="date" class="form-control"
+                   value="@(f.FechaDesde?.ToString("yyyy-MM-dd"))" />
+        </div>
+        <div class="col-md-4">
+            <label for="amigos-hasta" class="form-label">Fecha hasta</label>
+            <input id="amigos-hasta" name="FechaHasta" type="date" class="form-control"
+                   value="@(f.FechaHasta?.ToString("yyyy-MM-dd"))" />
+        </div>
+        <div class="col-md-4">
+            <label for="amigos-edicion" class="form-label">Estado de edición</label>
+            <select id="amigos-edicion" name="Edicion" class="form-select">
+                <option value="Todas" selected="@(f.Edicion == FiltroEdicion.Todas)">Todas</option>
+                <option value="Editadas" selected="@(f.Edicion == FiltroEdicion.Editadas)">Editadas</option>
+                <option value="NoEditadas" selected="@(f.Edicion == FiltroEdicion.NoEditadas)">No editadas</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2 mt-3">
+        <button type="submit" class="btn btn-primary">Buscar</button>
+        <a asp-controller="Friend" asp-action="Index" asp-route-search="@Model.Search" class="btn btn-outline-secondary">Limpiar filtros</a>
+    </div>
+</form>

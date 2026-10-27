@@ -5,10 +5,29 @@
 <article class="card shadow-sm mb-3">
     <div class="card-body">
         <div class="d-flex align-items-center mb-3">
-            <img src="@Model.Autor.FotoPerfil" alt="Foto de perfil de @Model.Autor.UserName"
-                 class="rounded-circle object-fit-cover me-3" width="48" height="48" />
+            @* Publicaciones de amigos: la foto y el usuario enlazan al perfil del amigo *@
+            @if (Model.PuedeVerPerfilAutor)
+            {
+                <a asp-controller="Friend" asp-action="Profile" asp-route-id="@Model.AutorId" class="me-3">
+                    <img src="@Model.Autor.FotoPerfil" alt="Foto de perfil de @Model.Autor.UserName"
+                         class="rounded-circle object-fit-cover" width="48" height="48" />
+                </a>
+            }
+            else
+            {
+                <img src="@Model.Autor.FotoPerfil" alt="Foto de perfil de @Model.Autor.UserName"
+                     class="rounded-circle object-fit-cover me-3" width="48" height="48" />
+            }
             <div class="flex-grow-1">
-                <div class="fw-semibold">@@@Model.Autor.UserName</div>
+                @if (Model.PuedeVerPerfilAutor)
+                {
+                    <div class="fw-semibold">@Model.Autor.NombreCompleto</div>
+                    <a asp-controller="Friend" asp-action="Profile" asp-route-id="@Model.AutorId" class="small">@@@Model.Autor.UserName</a>
+                }
+                else
+                {
+                    <div class="fw-semibold">@@@Model.Autor.UserName</div>
+                }
                 <div class="text-muted small">
                     @Model.FechaCreacion.ToLocalTime().ToString("dd/MM/yyyy hh:mm tt")
                     @if (Model.Editada)
@@ -48,8 +67,9 @@
         }
 
         @{
-            // En el Home cada publicación enlaza a su detalle, donde están los comentarios y las reacciones
-            var enHome = (Context.Request.RouteValues["controller"] as string) == "Home";
+            // En el Home y en Amigos (listado y perfil) cada publicación enlaza a su detalle,
+            // donde están los comentarios y las reacciones
+            var enHome = (Context.Request.RouteValues["controller"] as string) is "Home" or "Friend";
         }
 
         @if (Model.EsAutor || enHome)

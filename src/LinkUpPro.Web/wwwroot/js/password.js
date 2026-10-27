@@ -48,10 +48,22 @@
             else { texto = 'Fuerte'; color = 'success'; ancho = 100; }
 
             indicador.className = 'form-text';
-            indicador.innerHTML =
-                '<div class="progress mt-1" style="height: 6px;">' +
-                '<div class="progress-bar bg-' + color + '" style="width: ' + ancho + '%"></div></div>' +
-                '<span class="fw-semibold text-' + color + '">Fortaleza: ' + texto + '</span>';
+            indicador.replaceChildren();
+
+            const progreso = document.createElement('div');
+            progreso.className = 'progress mt-1';
+            progreso.style.height = '6px';
+
+            const barra = document.createElement('div');
+            barra.className = 'progress-bar bg-' + color;
+            barra.style.width = ancho + '%';
+            progreso.appendChild(barra);
+
+            const etiqueta = document.createElement('span');
+            etiqueta.className = 'fw-semibold text-' + color;
+            etiqueta.textContent = 'Fortaleza: ' + texto;
+
+            indicador.append(progreso, etiqueta);
         };
 
         campo.addEventListener('input', actualizar);

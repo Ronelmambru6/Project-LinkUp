@@ -20,7 +20,7 @@ namespace LinkUpPro.Persistence.Identity
             {
                 options.LoginPath = "/Account/Login";
                 options.LogoutPath = "/Account/Logout";
-                options.AccessDeniedPath = "/Account/Login";
+                options.AccessDeniedPath = "/Account/AccessDenied";
 
                 // Enunciado: HttpOnly, Secure y SameSite
                 options.Cookie.Name = "LinkUpPro.Auth";

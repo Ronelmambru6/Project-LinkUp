@@ -56,6 +56,13 @@ namespace LinkUpPro.Web.Controllers
 
             return View(new LoginViewModel { ReturnUrl = returnUrl });
         }
+        
+        [HttpGet]
+        public IActionResult AccessDenied()
+        {
+            TempData["Error"] = "No posee permisos para realizar esta acción.";
+            return RedirectToAction("Index", "Home");
+        }
 
         [AllowAnonymous]
         [HttpPost]

@@ -1,4 +1,5 @@
 ﻿using LinkUpPro.Persistence;
+using LinkUpPro.Persistence.Seed;
 using LinkUpPro.Application;
 using LinkUpPro.Shared;
 
@@ -54,5 +55,13 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
+
+// Datos de prueba (opcional): se cargan con el argumento --seed o con la configuración Seed:Enabled=true.
+// Es seguro repetirlo: si los datos ya existen, no hace nada. Requiere haber aplicado las migraciones.
+if (args.Contains("--seed") || app.Configuration.GetValue<bool>("Seed:Enabled"))
+{
+    using var scope = app.Services.CreateScope();
+    await scope.ServiceProvider.GetRequiredService<DatabaseSeeder>().SeedAsync();
+}
 
 app.Run();

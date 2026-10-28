@@ -94,9 +94,37 @@ Update-Database
 
 ### 5. Cargar los datos de prueba (seed)
 
-<!-- Esta sección la completa la persona encargada del seed (issue #18). -->
+El seed crea usuarios, amistades, solicitudes, publicaciones, comentarios, reacciones, notificaciones y partidas de Battleship para poder probar todas las pantallas sin registrar nada a mano. Se ejecuta al arrancar la aplicación con el perfil `https-seed` (que pasa el argumento `--seed`). Si todavía no se aplicaron las migraciones, el seed las aplica primero.
 
-_Pendiente: cómo ejecutar el seed y qué datos crea (usuarios, amigos, publicaciones, partidas)._
+```bash
+dotnet run --project src/LinkUpPro.Web --launch-profile https-seed
+```
+
+En Visual Studio basta con elegir el perfil **https-seed** en la lista junto al botón de inicio y presionar F5.
+
+Es seguro repetirlo: si el usuario `ana` ya existe, no hace nada. Para volver a cargarlo desde cero, borrar la base (ver [Notas](#notas)) y ejecutar de nuevo. Los datos se guardan en una sola transacción: si algo falla, no queda la base a medias.
+
+**Cuentas de prueba** (todas con la contraseña `Prueba123!`; se inicia sesión con el nombre de usuario):
+
+| Usuario | Nombre | Qué sirve para probar |
+|---|---|---|
+| `ana` | Ana Pérez | Cuenta principal. Amiga de carlos, maria y luis; tiene una solicitud pendiente de pedro y otra enviada a sofia |
+| `carlos` | Carlos Rodríguez | Amigo de ana, maria y sofia |
+| `maria` | María Gómez | Amiga de ana y carlos; tiene una partida esperando a que ana posicione |
+| `luis` | Luis Fernández | Amigo de ana y sofia; partida en curso con ana |
+| `sofia` | Sofía Martínez | **No** es amiga de ana (se ve su comentario sin enlace al perfil); tiene una partida sin barcos posicionados |
+| `pedro` | Pedro Núñez | Sin amigos; solicitud enviada a ana |
+| `diego` | Diego Jiménez | Cuenta **sin activar** (para probar el mensaje de cuenta inactiva) |
+
+**Qué incluye:**
+
+- **Amigos:** 6 amistades activas, solicitudes aceptadas, pendientes, rechazada y cancelada.
+- **Publicaciones:** 12, con imagen o enlace de YouTube; entre ellas una editada, una eliminada, una "Solo yo" y una con comentarios desactivados.
+- **Comentarios:** respuestas anidadas, un comentario editado, uno eliminado con respuestas ("Este comentario fue eliminado.") y otro eliminado sin respuestas.
+- **Reacciones y notificaciones:** reacciones de Me gusta y No me gusta, y las notificaciones que generaría la aplicación (leídas y no leídas, incluso de contenido eliminado).
+- **Battleship:** una partida ganada por hundimiento, una por rendición, una en curso, y dos en posicionamiento.
+
+Las imágenes de prueba están en `src/LinkUpPro.Web/wwwroot/seed/`.
 
 ### 6. Ejecutar la aplicación
 
@@ -112,6 +140,18 @@ La aplicación queda disponible en:
 - http://localhost:5193
 
 Si el navegador avisa que el certificado no es de confianza, ejecutar una vez `dotnet dev-certs https --trust`.
+
+## Prueba desde cero (máquina limpia)
+
+Lista para verificar el proyecto como lo haría quien lo clona por primera vez:
+
+1. `git clone https://github.com/Ronelmambru6/Project-LinkUp.git` y entrar a la carpeta.
+2. `dotnet restore` (sin errores).
+3. `dotnet build` (compila sin errores ni advertencias nuevas).
+4. Configurar el correo con user-secrets (paso 3).
+5. `dotnet run --project src/LinkUpPro.Web --launch-profile https-seed` (aplica las migraciones y carga el seed).
+6. Entrar a https://localhost:7251 con `ana` / `Prueba123!` y comprobar: Home con publicaciones, Amigos, Solicitudes, Notificaciones con contador y Battleship con partidas activas e historial.
+7. Registrar un usuario nuevo y confirmar que llega el correo de activación.
 
 ## Estructura de la solución
 

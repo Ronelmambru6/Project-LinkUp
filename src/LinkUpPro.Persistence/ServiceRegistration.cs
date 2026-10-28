@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using LinkUpPro.Application.Interfaces.Repositories;
 using LinkUpPro.Persistence.Repositories;
 using LinkUpPro.Persistence.Identity;
+using LinkUpPro.Persistence.Seed;
 using LinkUpPro.Application.Interfaces.Services;
 
 namespace LinkUpPro.Persistence
@@ -61,6 +62,7 @@ namespace LinkUpPro.Persistence
             services.AddScoped<IFriendRequestRepository, FriendRequestRepository>();
             services.AddScoped<IPostRepository, PostRepository>();
             services.AddScoped<INotificationRepository, NotificationRepository>();
+            services.AddScoped<DatabaseSeeder>();
 
             return services;
         }

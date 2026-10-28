@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" role="img" aria-label="Atardecer de ejemplo">
+  <defs><linearGradient id="sol" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff7043"/><stop offset="1" stop-color="#ffcc80"/></linearGradient></defs>
+  <rect width="800" height="450" fill="url(#sol)"/>
+  <circle cx="400" cy="270" r="90" fill="#fff3e0"/>
+  <rect y="270" width="800" height="180" fill="#37474f"/>
+  <g stroke="#ffe0b2" stroke-width="4" stroke-linecap="round">
+    <line x1="330" y1="300" x2="470" y2="300"/><line x1="350" y1="330" x2="450" y2="330"/><line x1="370" y1="360" x2="430" y2="360"/>
+  </g>
+</svg>

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" role="img" aria-label="Paisaje de ejemplo">
+  <defs><linearGradient id="cielo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6ec1ff"/><stop offset="1" stop-color="#e3f4ff"/></linearGradient></defs>
+  <rect width="800" height="450" fill="url(#cielo)"/>
+  <circle cx="650" cy="90" r="45" fill="#ffd54f"/>
+  <polygon points="0,450 0,300 180,170 360,320 520,200 800,360 800,450" fill="#4caf50"/>
+  <polygon points="0,450 0,370 220,260 420,380 620,290 800,400 800,450" fill="#2e7d32"/>
+</svg>
